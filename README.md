@@ -25,13 +25,6 @@ This fix:
 
 ---
 
-## Prerequisites
-To use this fix, **`wscript.exe`** must be installed in **`C:\Windows\System32\wscript.exe`**.  
-This script is included by default in Windows, so no additional installation is usually required.  
-If the file is missing, you may need to restore it from your Windows installation.
-
----
-
 ## 📥 Installation
 
 ### **Step 1: Download & Extract**
