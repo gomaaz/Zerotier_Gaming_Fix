@@ -25,7 +25,13 @@ This fix:
 
 ---
 
+## Prerequisites
+To use this fix, **`wscript.exe`** must be installed in **`C:\Windows\System32\wscript.exe`**.  
+This script is included by default in Windows, so no additional installation is usually required.  
+If the file is missing, you may need to restore it from your Windows installation.
+
 ## 📥 Installation
+
 ### **Step 1: Download & Extract**
 1. **Download the latest ZIP** from the [Releases](https://github.com/gomaaz/Zerotier_Gaming_Fix/releases) page.  
 2. Extract the ZIP file (`Zerotier_Fix_vX.X.zip`).  
@@ -61,6 +67,7 @@ If you want to remove the fix:
 - **Run the installer as Administrator** to apply settings correctly.
 - If your firewall is **blocking LAN traffic**, manually check the **Windows Defender settings**.
 - If LAN discovery still doesn’t work, verify that **Multicast & Broadcast are enabled in ZeroTier Central**.
+- Consider running a own Zerotier node with [ZTNET](https://ztnet.network/) since you can adjust MTU Sizes for gaming optimization and unlimited Devices.
 
 ---
 
