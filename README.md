@@ -27,11 +27,11 @@ This fix:
 
 ## 📥 Installation
 ### **Step 1: Download & Extract**
-1. **Download the latest ZIP** from the [Releases](#) page.  
-2. Extract the ZIP file (`Zerotier_Fix_v1.0.zip`).  
+1. **Download the latest ZIP** from the [Releases](https://github.com/gomaaz/Zerotier_Gaming_Fix/releases) page.  
+2. Extract the ZIP file (`Zerotier_Fix_vX.X.zip`).  
 
 ### **Step 2: Install the Fix**
-1. Open the extracted folder **`Zerotier_Fix_v1.0`**.
+1. Open the extracted folder **`Zerotier_Fix_vX.X`**.
 2. **Right-click `install_zerotier_gaming_fix.bat` → Run as Administrator**.  
 3. The fix will:
    - Copy necessary files to `C:\zerotier_fix`
