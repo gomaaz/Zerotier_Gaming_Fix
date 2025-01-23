@@ -58,10 +58,14 @@ If you want to remove the fix:
 
 ---
 
+## ✅ Verify its working
+- You can always check your whole adapter settings with the script `Check_Network_Adapter_and_metrics.bat` in resources folder. (Run as administrator)
+
+---
+
 ## ⚠️ Notes & Troubleshooting
 - **Run the installer as Administrator** to apply settings correctly.
 - If your firewall is **blocking LAN traffic**, manually check the **Windows Defender settings**.
-- You can always check your whole adapter settings with the script `Check_Network_Adapter_and_metrics.bat` in resources folder
 - If LAN discovery still doesn’t work, verify that **Multicast & Broadcast are enabled in ZeroTier Central**.
 - Consider running a own Zerotier node with [ZTNET](https://ztnet.network/) since you can adjust MTU Sizes for gaming optimization and unlimited Devices.
 
