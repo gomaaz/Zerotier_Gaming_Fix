@@ -1,7 +1,7 @@
 # 🎮 ZeroTier Gaming Fix
 **Automatically fixes ZeroTier network settings for seamless LAN gaming!**  
 
-When using **ZeroTier for LAN gaming**, some users experience issues where players **cannot see each other in-game**. This happens because **Windows resets network settings** upon reconnecting, affecting:  
+When using **ZeroTier for LAN gaming**, some users experience issues where players **cannot see each other in-game**. This happens because **Windows resets network settings(!)** upon reconnecting, affecting:  
 ✅ **Network adapter metrics**  
 ✅ **Firewall profile (public/private)**  
 ✅ **Broadcast traffic for game discovery**  
@@ -11,7 +11,7 @@ This tool ensures that **ZeroTier works flawlessly for LAN gaming**, even after 
 ---
 
 ## 🚀 Why is this needed?
-Many games rely on **LAN discovery via broadcast packets**. Windows often **resets key network settings** when reconnecting to ZeroTier, which prevents proper LAN discovery.  
+Many games rely on **LAN discovery via broadcast packets**. Windows often **resets key network settings(!)** when reconnecting to ZeroTier, which prevents proper LAN discovery.  
 This fix:
 - Ensures **LAN broadcast works**, so game lobbies are always visible.
 - Forces **ZeroTier as the top-priority network adapter**.
