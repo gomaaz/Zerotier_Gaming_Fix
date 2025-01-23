@@ -59,7 +59,9 @@ If you want to remove the fix:
 ---
 
 ## ✅ Verify its working
-- You can always check your whole adapter settings with the script `Check_Network_Adapter_and_metrics.bat` in resources folder. (Run as administrator)
+- You can always check your whole adapter settings with the script 
+`Check_Network_Adapter_and_metrics.bat` in resources folder. (Run as administrator)
+Whith this, you can check if metrics and firewall is correctly set to your zerotier interfaces.
 
 ---
 
