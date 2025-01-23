@@ -16,6 +16,7 @@ This fix:
 - Ensures **LAN broadcast works**, so game lobbies are always visible.
 - Forces **ZeroTier as the top-priority network adapter**.
 - Automatically **corrects Windows firewall settings** to allow LAN traffic.
+- Priorizes ipv4 oder ipv6, as ipv6 is an unknown technology for old LAN Games.
 
 ### ✅ Features:
 ✔ **Auto-fix for ZeroTier adapter settings**  
@@ -38,6 +39,7 @@ This fix:
    - Copy necessary files to `C:\zerotier_fix`
    - Install an automated scheduled task, triggered by a zerotier network (re-)connect
    - Apply the correct network settings for those interfaces
+   - Priorizes ipv4 over ipv6 (a Backup of your prio-list is generated in C:\zerotier_fix `prefix_policy_backup.txt`)
 
 ---
 
@@ -46,7 +48,9 @@ If you want to remove the fix:
 1. **Right-click `uninstall_zerotier_gaming_fix.bat` → Run as Administrator**.
 2. This will:
    - Remove the scheduled task  
-   - Delete `C:\zerotier_fix`  
+   - Delete `C:\zerotier_fix`
+  
+Note: Ich 
 
 ---
 
