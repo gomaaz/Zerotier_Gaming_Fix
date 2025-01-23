@@ -1,6 +1,14 @@
 @echo off
 echo Fixing ZeroTier network settings...
 
+:: Define backup file path
+set BACKUP_FILE=%~dp0prefix_policy_backup.txt
+
+:: Check if backup already exists
+if not exist "%BACKUP_FILE%" (
+    echo [INFO] Saving current IPv6 prefix policies to %BACKUP_FILE%...
+    netsh interface ipv6 show prefixpolicies > "%BACKUP_FILE%"
+)
 
 :: Set metric to 1 for all ZeroTier adapters
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
@@ -17,5 +25,13 @@ for /f "tokens=1 delims=," %%A in ('powershell -NoProfile -ExecutionPolicy Bypas
     route -p add 255.255.255.255 mask 255.255.255.255 0.0.0.0 if %%A
 )
 
-echo [DONE] ZeroTier network settings fixed!
+:: Prioritize IPv4 over IPv6 by setting ::ffff:0:0/96 prefix to 100
+echo [INFO] Prioritizing IPv4 over IPv6...
+netsh interface ipv6 set prefixpolicy ::ffff:0:0/96 100 4
+
+:: Verify new prefix policy settings
+echo [INFO] Checking prefix policies after modification...
+netsh interface ipv6 show prefixpolicies
+
+echo [DONE] ZeroTier network settings fixed! IPv4 is now prioritized.
 exit
