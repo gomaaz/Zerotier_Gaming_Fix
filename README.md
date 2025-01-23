@@ -36,8 +36,8 @@ This fix:
 2. **Right-click `install_zerotier_gaming_fix.bat` → Run as Administrator**.  
 3. The fix will:
    - Copy necessary files to `C:\zerotier_fix`
-   - Install an automated scheduled task  
-   - Apply the correct network settings  
+   - Install an automated scheduled task, triggered by a zerotier network (re-)connect
+   - Apply the correct network settings for those interfaces
 
 ---
 
