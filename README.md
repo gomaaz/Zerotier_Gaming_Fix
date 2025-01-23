@@ -71,7 +71,7 @@ Whith this, you can check if metrics and firewall is correctly set to your zerot
 - is a `DIRECT` connection to each peer working? Check with powershell (as administrator) and type `zerotier-cli.bat peers`
 - If your firewall is **blocking LAN traffic**, manually check the **Windows Defender settings**.
 - If LAN discovery still doesn’t work, verify that **Multicast & Broadcast are enabled in ZeroTier Central**.
-- Consider running a own Zerotier node with [ZTNET](https://ztnet.network/) since you can adjust MTU Sizes for gaming optimization and unlimited Devices.
+- Consider running a own Zerotier controller with [ZTNET](https://ztnet.network/) since you can adjust MTU Sizes (1400 eg.) for gaming optimization and unlimited Devices.
 
 ---
 
