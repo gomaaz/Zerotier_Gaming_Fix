@@ -66,7 +66,7 @@ If you want to remove the fix:
 ## ⚠️ Notes & Troubleshooting
 - **Run the installer as Administrator** to apply settings correctly.
 - Check if ping to the devices is working `ping <zerotier-client-ip>`
-- is a `DIRECT` connection to each peer working? Check with powershell (as administrator) and type `zerotier-cli.bat peers `.
+- is a `DIRECT` connection to each peer working? Check with powershell (as administrator) and type `zerotier-cli.bat peers`
 - If your firewall is **blocking LAN traffic**, manually check the **Windows Defender settings**.
 - If LAN discovery still doesn’t work, verify that **Multicast & Broadcast are enabled in ZeroTier Central**.
 - Consider running a own Zerotier node with [ZTNET](https://ztnet.network/) since you can adjust MTU Sizes for gaming optimization and unlimited Devices.
