@@ -39,7 +39,7 @@ This fix:
    - Copy necessary files to `C:\zerotier_fix`
    - Install an automated scheduled task, triggered by a zerotier network (re-)connect
    - Apply the correct network settings for those interfaces
-   - Set ipv6 prefix policies. Priorizes ipv4 over ipv6, as a workaround, while ipv6 cannot be deactived by shell for Zerotier adapters.
+   - Set IPv6 prefix policies to prioritize IPv4 over IPv6 as a workaround, since IPv6 cannot be disabled via shell commands for ZeroTier adapters.
 
 ---
 
