@@ -39,7 +39,7 @@ This fix:
    - Copy necessary files to `C:\zerotier_fix`
    - Install an automated scheduled task, triggered by a zerotier network (re-)connect
    - Apply the correct network settings for those interfaces
-   - Priorizes ipv4 over ipv6 (a Backup of your prio-list is generated in C:\zerotier_fix `prefix_policy_backup.txt`)
+   - Set ipv6 prefix policies. Priorizes ipv4 over ipv6, as a workaround, while ipv6 cannot be deactived by shell for Zerotier adapters.
 
 ---
 
@@ -47,10 +47,9 @@ This fix:
 If you want to remove the fix:
 1. **Right-click `uninstall_zerotier_gaming_fix.bat` → Run as Administrator**.
 2. This will:
-   - Remove the scheduled task  
+   - Remove the scheduled task
+   - restore ipv6 prefix policies  
    - Delete `C:\zerotier_fix`
-  
-Note: Ich 
 
 ---
 
@@ -58,14 +57,14 @@ Note: Ich
 1. **Checks if the ZeroTier adapter metric is correct** (`Metric = 1`).
 2. **Ensures Windows firewall allows LAN traffic** by setting the ZeroTier network to **Private**.
 3. **Adds a broadcast route (`255.255.255.255`)** to enable LAN discovery.
-4. **Runs automatically** whenever ZeroTier reconnects.
+4. **Runs automatically** whenever ZeroTier reconnects - for existing and all future zerotier networks.
 
 ---
 
 ## ✅ Verify its working
 - You can always check your whole adapter settings with the script 
-`Check_Network_Adapter_and_metrics.bat` in resources folder. (Run as administrator)
-Whith this, you can check if metrics and firewall is correctly set to your zerotier interfaces.
+`Check_Network_interfaces.bat` in resources folder. (Run as administrator)
+Whith this, you can check if metrics, firewall and ipv6 prefix policies are correctly set to your zerotier interfaces.
 
 ---
 
