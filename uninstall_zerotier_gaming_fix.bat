@@ -29,6 +29,7 @@ if exist "%BACKUP_FILE%" (
 :: Stop and delete the scheduled task
 echo [INFO] Removing scheduled task...
 schtasks /delete /tn "ZeroTier Auto Fix" /f >nul 2>&1
+schtasks /delete /tn "ZeroTier_PrioritizeIPv6" /f >nul 2>&1
 
 :: Small delay to ensure the task is removed
 timeout /t 2 /nobreak >nul
