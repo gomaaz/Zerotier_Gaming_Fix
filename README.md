@@ -65,7 +65,7 @@ If you want to remove the fix:
 ## ✅ Verify its working
 - You can always check your whole adapter settings with the script 
 `Check_Network_interfaces.bat` in resources folder. (Run as administrator)
-Whith this, you can check if metrics, firewall and ipv6 prefix policies are correctly set to your zerotier interfaces.
+with this, you can check if metrics, firewall and ipv6 prefix policies are correctly set to your zerotier interfaces.
 
 ---
 
