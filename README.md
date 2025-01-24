@@ -89,7 +89,8 @@ By default, **broadcast traffic is not automatically routed over the ZeroTier ad
 
 Like so
 
-sudo route add -host 255.255.255.255 dev my_zerotier_interface
+`sudo route add -host 255.255.255.255 dev my_zerotier_interface`
+
 Replace `my_zerotier_interface` with the actual name of your ZeroTier adapter.
 
 For this find your interface whith on Linux:
