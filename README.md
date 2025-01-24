@@ -66,6 +66,7 @@ If you want to remove the fix:
 - You can always check your whole adapter settings with the script 
 `Check_Network_interfaces.bat` in resources folder. (Run as administrator)
 with this, you can check if metrics, firewall and ipv6 prefix policies are correctly set to your zerotier interfaces.
+Expected outputs are written down, for every block.
 
 ---
 
