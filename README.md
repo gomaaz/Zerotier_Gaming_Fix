@@ -81,22 +81,33 @@ Whith this, you can check if metrics, firewall and ipv6 prefix policies are corr
 
 ---
 
-# 🎮 Considerations for Gaming with Linux and Mac Friends  
+## 🎮 Considerations for Gaming with Linux and Mac Friends  
 
 When playing with friends on **Linux or macOS**, there are additional steps required to ensure **LAN discovery works properly over ZeroTier**.
 
 By default, **broadcast traffic is not automatically routed over the ZeroTier adapter** on macOS and Linux. To fix this, you need to **manually add a broadcast route**.
 
-```sh
+Like so
+
 sudo route add -host 255.255.255.255 dev my_zerotier_interface
+Replace `my_zerotier_interface` with the actual name of your ZeroTier adapter.
+
+For this find your interface whith on Linux:
+
+```sh on Linux (shell)
+ip addr
 ```
-Find your 
 
----
+on mac (with Terminal)
+```sh on mac
+ifconfig
+```
 
-### ✅ **Fix: Enable Broadcast Traffic**  
+then enter the command with the device ID printed in the output above
+```sh with ztkseq3i6h as example device ID
+sudo route add -host 255.255.255.255 dev ztkseq3i6h
+```
 
-Run the following command in a terminal (**on Linux/macOS*
 
 ---
 
