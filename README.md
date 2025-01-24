@@ -16,7 +16,7 @@ This fix:
 - Ensures **LAN broadcast works**, so game lobbies are always visible.
 - Forces **ZeroTier as the top-priority network adapter**.
 - Automatically **corrects Windows firewall settings** to allow LAN traffic.
-- Prioritizes IPv4 over IPv6, as IPv6 is an unknown technology for older LAN games.
+- Prioritizes IPv4 over IPv6. this prioritization ensures that LAN games (which often don’t support IPv6) will use IPv4 whenever possible.
 
 ### ✅ Features:
 ✔ **Auto-fix for ZeroTier adapter settings**  
