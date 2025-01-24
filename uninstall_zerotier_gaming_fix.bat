@@ -9,6 +9,23 @@ if %errorLevel% neq 0 (
     exit /b
 )
 
+:: Restore IPv6 Prefix Policies if backup exists
+set BACKUP_FILE=C:\zerotier_fix\prefix_policy_backup.txt
+
+if exist "%BACKUP_FILE%" (
+    echo [INFO] Restoring saved IPv6 prefix policies...
+    
+    :: Read and restore prefix policy, skipping the first header line
+    for /f "skip=1 tokens=1,2,3 delims= " %%A in (%BACKUP_FILE%) do (
+        echo Restoring: netsh interface ipv6 set prefixpolicy %%C %%A %%B
+        netsh interface ipv6 set prefixpolicy %%C %%A %%B
+    )
+
+    echo [INFO] Prefix policies restored successfully.
+) else (
+    echo [WARNING] No backup file found. Skipping prefix policy restore.
+)
+
 :: Stop and delete the scheduled task
 echo [INFO] Removing scheduled task...
 schtasks /delete /tn "ZeroTier Auto Fix" /f >nul 2>&1
@@ -47,7 +64,6 @@ if exist "C:\zerotier_fix" (
     exit /b
 )
 
-
-echo [DONE] ZeroTier Auto Fix has been uninstalled successfully.
+echo [DONE] ZeroTier Auto Fix has been uninstalled successfully. IPv6 prefix policies have been restored.
 pause
 exit
