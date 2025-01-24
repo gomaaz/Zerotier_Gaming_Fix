@@ -93,7 +93,7 @@ Like so
 
 Replace `my_zerotier_interface` with the actual name of your ZeroTier adapter.
 
-For this find your interface whith on Linux:
+For this find your interface with on Linux:
 
 ```sh on Linux (shell)
 ip addr
