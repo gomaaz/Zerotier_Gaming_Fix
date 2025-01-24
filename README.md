@@ -57,7 +57,7 @@ If you want to remove the fix:
 1. **Checks if the ZeroTier adapter metric is correct** (`Metric = 1`).
 2. **Ensures Windows firewall allows LAN traffic** by setting the ZeroTier network to **Private**.
 3. **Adds a broadcast route (`255.255.255.255`)** to enable LAN discovery.
-4. **Set ipv6 policies** to prefer ipv4 over ipv6.
+4. **Set ipv6 policies** to prefer ipv4 over ipv6. ::ffff:0:0/96 at top of the prefix table.
 5. **Runs automatically** whenever ZeroTier reconnects - for existing and all future zerotier networks.
 
 ---
