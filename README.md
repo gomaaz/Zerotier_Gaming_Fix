@@ -120,8 +120,24 @@ Pull requests are welcome! If you have improvements, feel free to fork the repo 
 
 ---
 
-## 📜 License
-MIT License. Free to use, modify, and share.
+## 🛑 Disclaimer
+
+This software is provided **"as is"** without any warranties or guarantees. By using this script, you agree that the author(s) are **not responsible** for any potential damages, data loss, or system instability that may result from its use.
+
+### ⚠️ Use at Your Own Risk!
+- Modifying network settings, firewall rules, and system components may cause **unintended side effects**.
+- Enabling or disabling legacy components (e.g., DirectPlay) may affect **system performance or compatibility**.
+- Always **create a backup** of your system before applying any modifications.
+
+### 🚀 No Liability
+The author(s) **assume no liability** for:
+- System crashes, malfunctions, or misconfigurations.
+- Loss of network connectivity or application failures.
+- Any other unintended behavior resulting from the use of this script.
+
+If you are **unsure** about using this tool, consult **official documentation** or seek **professional support**.
+
+By running this script, you **acknowledge and accept** full responsibility for any changes made to your system.
 
 ---
 
