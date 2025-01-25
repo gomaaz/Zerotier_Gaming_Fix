@@ -92,8 +92,8 @@ Expected outputs are written down, for every block.
 - is a `DIRECT` connection to each peer working? Check with powershell (as administrator) and type `zerotier-cli.bat peers`
 - If your firewall is **blocking LAN traffic**, manually check the **Windows Defender settings**.
 - If LAN discovery still doesn’t work, verify that **Multicast & Broadcast are enabled in ZeroTier Central**.
-- If Discovery still doesnt work you can have a look at [Winipbroadcast-1.6](https://github.com/dechamps/WinIPBroadcast/releases/tag/winipbroadcast-1.6)
-- In Zerotier dashboard, set managed routes `255.255.255.255/32 via 0.0.0.0` and `224.0.0.0/4 via 0.0.0.0`)
+- If Discovery still doesnt work, you can have a look at [Winipbroadcast-1.6](https://github.com/dechamps/WinIPBroadcast/releases/tag/winipbroadcast-1.6)
+- If Discovery still doesnt work, you can install [Npcap](https://npcap.com/). Npcap enables raw packet capturing, allowing these games to detect LAN sessions over ZeroTier, Hamachi, or OpenVPN. 
 - Consider running a own Zerotier controller with [ZTNET](https://ztnet.network/) since you can adjust MTU Sizes (1400 eg.) for gaming optimization and unlimited Devices.
 
 ---
