@@ -17,6 +17,9 @@ if not exist "%BACKUP_FILE%" (
     echo [INFO] Saving current IPv6 prefix policies to %BACKUP_FILE%...
     netsh interface ipv6 show prefixpolicies > "%BACKUP_FILE%"
 )
+
+
+
 :: Prioritize IPv4 over IPv6 by setting ::ffff:0:0/96 prefix to 100
 echo [INFO] Prioritizing IPv4 over IPv6...
 netsh interface ipv6 set prefixpolicy ::ffff:0:0/96 100 4
