@@ -44,6 +44,16 @@ This fix:
 
 ---
 
+## 🛜 Check your Zerotier Network in the Dashboard
+- Click on your network
+- Set managed routes
+- add 255.255.255.255/32 via 0.0.0.0 Enables Broadcast Traffic
+- add 224.0.0.0/4 via 0.0.0.0 Enables Multicast Traffic
+- done.
+
+
+---
+
 ## 🛠 Uninstallation
 If you want to remove the fix:
 1. **Right-click `uninstall_zerotier_gaming_fix.bat` → Run as Administrator**.
