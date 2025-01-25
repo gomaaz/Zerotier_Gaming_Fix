@@ -56,11 +56,15 @@ If you want to remove the fix:
 ---
 
 ## 🔧 How It Works
-1. **Checks if the ZeroTier adapter metric is correct** (`Metric = 1`).
-2. **Ensures Windows firewall allows LAN traffic** by setting the ZeroTier network to **Private**.
-3. **Adds a broadcast route (`255.255.255.255`)** to enable LAN discovery.
-4. **Set ipv6 policies** to prefer ipv4 over ipv6. ::ffff:0:0/96 at top of the prefix table.
-5. **Runs automatically** whenever ZeroTier reconnects - for existing and all future zerotier networks.
+**Runs automatically** whenever ZeroTier reconnects - for existing and all future zerotier networks.
+
+| **Category**                | **Fix**                                       | **Installation**                                               |
+| --------------------------- | --------------------------------------------- | -------------------------------------------------------------- |
+| **Multicast & Broadcast**   | Enable LAN discovery for older games          | Ensure routes for `255.255.255.255/32` and `224.0.0.0/4` exist |
+| **DirectPlay Fix**          | Required for older games                      | Enables Feature via `dism` command                                      |
+| **Network Metric Priority** | Ensure ZeroTier has priority for game traffic | Set `Metric = 1` for ZeroTier adapters                         |
+| **IPv6 Issues**             | Prioritize ipv4 Traffic if causing issues                     |  ::ffff:0:0/96 at top of the prefix table                        |
+| **Windows Network Profile** | Set ZeroTier as **Private** network           | Prevents Windows from blocking LAN traffic                     |
 
 ---
 
