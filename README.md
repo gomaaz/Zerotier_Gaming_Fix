@@ -51,7 +51,7 @@ If you want to remove the fix:
    - Remove the scheduled task
    - restore ipv6 prefix policies  
    - Delete `C:\zerotier_fix`
-   - remove direct play feature from windows components
+   - deactivate direct play feature from windows components
 
 ---
 
