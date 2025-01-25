@@ -11,6 +11,28 @@ if %errorLevel% neq 0 (
     exit /b
 )
 
+
+echo ==============================================================
+echo [INFO] Checking ZeroTier Peer Connections...
+echo ==============================================================
+
+:: Run zerotier-cli peers and display output
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "& {Start-Process -NoNewWindow -FilePath 'cmd.exe' -ArgumentList '/c zerotier-cli peers' -Wait}"
+
+echo.
+echo.
+echo ==============================================================
+echo [INFO] Explanation:
+echo - "DIRECT"  = Good! Your peer is connected directly (low latency)
+echo - "RELAY"   = Bad! Your peer is going through a relay (high latency)
+echo - If relay, check if UDP Port 9993 is open in your router/firewall
+echo ==============================================================
+echo.
+echo.
+echo.
+
+
 :: Check Direct Play Status
 echo ==============================================================
 echo [0] Direct Play Status
