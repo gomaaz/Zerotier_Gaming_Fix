@@ -26,6 +26,12 @@ if exist "%BACKUP_FILE%" (
     echo [WARNING] No backup file found. Skipping prefix policy restore.
 )
 
+:: Remove DirectPlay
+echo ==============================================================
+echo [INFO] Disabling DirectPlay (Legacy Component)...
+dism /online /disable-feature /featurename:DirectPlay /NoRestart
+echo [DONE] DirectPlay has been disabled!
+
 :: Stop and delete the scheduled task
 echo [INFO] Removing scheduled task...
 schtasks /delete /tn "ZeroTier Auto Fix" /f >nul 2>&1
