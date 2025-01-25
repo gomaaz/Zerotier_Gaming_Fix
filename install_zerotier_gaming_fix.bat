@@ -19,6 +19,10 @@ if not exist "%TARGET_DIR%" (
     echo [INFO] Created directory: %TARGET_DIR%
 )
 
+echo [INFO] Enabling DirectPlay (Legacy Component)...
+dism /online /enable-feature /featurename:DirectPlay /all /NoRestart
+echo [DONE] DirectPlay has been enabled!
+
 :: Copy all necessary files
 echo [INFO] Copying files to %TARGET_DIR%...
 xcopy "%SOURCE_DIR%\*" "%TARGET_DIR%" /Y /E
