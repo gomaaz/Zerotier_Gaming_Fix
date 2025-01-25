@@ -1,7 +1,14 @@
 @echo off
 cls
-echo Displaying network adapter metrics, firewall profiles, and IPv6 prefix policies...
 echo.
+echo.
+echo  8888P                   w   w               .d88b                 w                d8b w       
+echo   dP  .d88b 8d8b .d8b. w8ww w .d88b 8d8b    8P www .d88 8d8b.d8b. w 8d8b. .d88     8'  w Yb dP 
+echo  dP   8.dP' 8P   8' .8  8   8 8.dP' 8P      8b  d8 8  8 8P Y8P Y8 8 8P Y8 8  8    w8ww 8  `8.  
+echo d8888 `Y88P 8    `Y8P'  Y8P 8 `Y88P 8       `Y88P' `Y88 8   8   8 8 8   8 `Y88     8   8 dP Yb 
+echo                                                                           wwdP
+echo.
+echo.  
 
 :: Check for administrator privileges
 net session >nul 2>&1
@@ -48,7 +55,7 @@ echo.
 :: Display network adapter metrics
 echo ==============================================================
 echo [1] Network Adapter Metrics:
-echo Expected Output (IPv4 should have lowest interfacemetric)
+echo Expected Output (Zerotier adapters should have lowest interfacemetric)
 echo ==============================================================
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "& {Get-NetIPInterface | Select-Object InterfaceAlias, InterfaceIndex, AddressFamily, InterfaceMetric | Format-Table -AutoSize}"
