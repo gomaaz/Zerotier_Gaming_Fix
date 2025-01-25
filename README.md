@@ -40,6 +40,7 @@ This fix:
    - Install an automated scheduled task, triggered by a zerotier network (re-)connect
    - Apply the correct network settings for those interfaces
    - Set IPv6 prefix policies to prioritize IPv4 over IPv6 as a workaround, since IPv6 cannot be disabled via shell commands for ZeroTier adapters.
+   - activate the legacycomponent of windows "Directplay", since it's needed for some [older games](https://gitlab.winehq.org/wine/wine/-/wikis/DirectPlay-Games)
 
 ---
 
@@ -50,6 +51,7 @@ If you want to remove the fix:
    - Remove the scheduled task
    - restore ipv6 prefix policies  
    - Delete `C:\zerotier_fix`
+   - remove direct play feature from windows components
 
 ---
 
