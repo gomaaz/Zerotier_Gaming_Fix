@@ -11,6 +11,16 @@ if %errorLevel% neq 0 (
     exit /b
 )
 
+:: Check Direct Play Status
+echo ==============================================================
+echo [0] Direct Play Status
+echo Expected Output State: Enabled
+echo ==============================================================
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "& {Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -eq 'DirectPlay' } | Format-Table FeatureName, State -AutoSize }"
+echo.
+echo.
+echo.
 
 
 :: Display network adapter metrics
