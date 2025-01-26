@@ -89,7 +89,7 @@ Expected outputs are written down, for every block.
 
 ## ⚠️ Notes & Troubleshooting
 - **Run the installer as Administrator** to apply settings correctly.
-- Check if ping to the devices is working `ping <zerotier-client-ip>`
+- Check if ping to the devices is working `ping <zerotier-client-ip>` -> find out your ip with cmd.exe -> "ipconfig" enter
 - is a `DIRECT` connection to each peer working? Check with `Check_Network_interfaces.bat` in resources folder. (Run as administrator)
 - If your firewall is **blocking LAN traffic**, manually check the **Windows Defender settings**.
 - If LAN discovery still doesn’t work, verify that **Multicast & Broadcast are enabled in ZeroTier Central**.
