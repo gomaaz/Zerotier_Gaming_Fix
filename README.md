@@ -126,7 +126,22 @@ then enter the command with the device ID printed in the output above
 ```sh with ztkseq3i6h as example device ID
 sudo route add -host 255.255.255.255 dev ztkseq3i6h
 ```
+---
 
+## Why Zerotier?
+
+Zerotier is an advanced networking solution that provides several advantages over traditional VPNs for gaming:
+
+- **Layer 2 Networking**: Unlike many VPN solutions that operate on Layer 3, Zerotier functions on OSI Layer 2, allowing full broadcast and multicast support. This ensures that players can discover each other more easily in multiplayer games.
+- **Low Latency**: Zerotier is optimized for peer-to-peer communication, reducing latency compared to conventional VPN solutions.
+- **Seamless NAT Traversal**: Many games struggle with NAT issues, but Zerotier efficiently handles NAT traversal, making connections more reliable.
+- **Cross-Platform Support**: Works on Windows, Linux, macOS, Android, and iOS, allowing seamless gaming across different devices.
+
+---
+
+## Does the fix work without Zerotier?
+
+Yes, the fix can still help improve connectivity and multiplayer visibility even if you're not using Zerotier. The main focus is on the network adapter configuration. By ensuring that the adapters are set up correctly and that the necessary network bridges are enabled, players can sometimes resolve connection issues without the need for Zerotier. However, without Zerotier, you may not benefit from the advanced Layer 2 networking capabilities and ease of multiplayer discovery that Zerotier provides. Check your LAN settings with the script provided in resources folder `Check_Network_interfaces.bat` (run as administrator)
 
 ---
 
