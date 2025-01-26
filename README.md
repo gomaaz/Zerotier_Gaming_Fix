@@ -90,7 +90,7 @@ Expected outputs are written down, for every block.
 ## ⚠️ Notes & Troubleshooting
 - **Run the installer as Administrator** to apply settings correctly.
 - Check if ping to the devices is working `ping <zerotier-client-ip>`
-- is a `DIRECT` connection to each peer working? Check with powershell (as administrator) and type `zerotier-cli.bat peers`
+- is a `DIRECT` connection to each peer working? Check with `Check_Network_interfaces.bat` in resources folder. (Run as administrator)
 - If your firewall is **blocking LAN traffic**, manually check the **Windows Defender settings**.
 - If LAN discovery still doesn’t work, verify that **Multicast & Broadcast are enabled in ZeroTier Central**.
 - If Discovery still doesnt work, you can have a look at [Winipbroadcast-1.6](https://github.com/dechamps/WinIPBroadcast/releases/tag/winipbroadcast-1.6)
