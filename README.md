@@ -1,5 +1,5 @@
 # 🎮 ZeroTier Gaming Fix
-**Automatically fixes ZeroTier network settings for seamless LAN gaming!**  
+**Automatically fixes ZeroTier network settings for seamless LAN gaming with zero coding knowledge!**  
 
 When using **ZeroTier for LAN gaming**, some users experience issues where players **cannot see each other in-game**. This happens because **Windows resets network settings(!)** upon reconnecting, affecting:  
 ✅ **Network adapter metrics**  
