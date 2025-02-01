@@ -41,6 +41,7 @@ This fix:
    - Apply the correct network settings for those interfaces
    - Set IPv6 prefix policies to prioritize IPv4 over IPv6 as a workaround, since IPv6 cannot be disabled via shell commands for ZeroTier adapters.
    - activate the legacycomponent of windows "Directplay", since it's needed for some [older games](https://gitlab.winehq.org/wine/wine/-/wikis/DirectPlay-Games)
+   - (optional) Set MTU Size for the whole network. For gaming, many users prefer a lower MTU such as 1400 or even below, to potentially reduce latency and avoid large packet fragmentation. NOTE: After change Zerotier will propably still show an MTU of its default value 2800, but the size has changed to your preferred value. You can check this if you ping your ZT Opponent with `ping <ZT-Opponent-IP> -l 1500 -f`. If you have set 1400 it will "unknown error" or "need to be fragmented" as this will tell you: more than 1400 is not allowed.  
 
 ---
 
@@ -76,6 +77,7 @@ If you want to remove the fix:
 | **Network Metric Priority** | Ensure ZeroTier has priority for game traffic | Set `Metric = 1` for ZeroTier adapters                         |
 | **IPv6 Issues**             | Prioritize ipv4 Traffic if causing issues                     |  ::ffff:0:0/96 at top of the prefix table                        |
 | **Windows Network Profile** | Set ZeroTier as **Private** network           | Prevents Windows from blocking LAN traffic                     |
+| **(Optional)Change Network MTU Size** | potentially reduce latency and avoid large packet fragmentation.            | Set the Network MTU Size on ZT-network (my.zerotier.com)                     |
 
 ---
 
@@ -95,7 +97,7 @@ Expected outputs are written down, for every block.
 - If LAN discovery still doesn’t work, verify that **Multicast & Broadcast are enabled in ZeroTier Central**.
 - If Discovery still doesnt work, you can have a look at [Winipbroadcast-1.6](https://github.com/dechamps/WinIPBroadcast/releases/tag/winipbroadcast-1.6)
 - If Discovery still doesnt work, you can install [Npcap](https://npcap.com/). Npcap enables raw packet capturing, allowing these games to detect LAN sessions over ZeroTier, Hamachi, or OpenVPN. 
-- Consider running a own Zerotier controller with [ZTNET](https://ztnet.network/) since you can adjust MTU Sizes (1400 eg.) for gaming optimization and unlimited Devices.
+- Consider running a own Zerotier controller with [ZTNET](https://ztnet.network/) since you can adjust MTU Sizes in the dashboard (1400 eg.) for gaming optimization and have unlimited Devices.
 
 ---
 
