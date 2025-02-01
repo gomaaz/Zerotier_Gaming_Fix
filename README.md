@@ -18,6 +18,7 @@ This fix:
 - Forces **ZeroTier as the top-priority network adapter**.
 - Automatically **corrects Windows firewall settings** to allow LAN traffic.
 - Prioritizes IPv4 over IPv6 (by default windows prioritizes ipv6). this prioritization ensures that LAN games (which often don’t support IPv6) will use IPv4 whenever possible.
+- Optionally to lower a max allowed MTU Packet Size, since games need lower packets for a reduced latency.
 
 ### ✅ Features:
 ✔ **Auto-fix for ZeroTier adapter settings**  
