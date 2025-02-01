@@ -63,6 +63,7 @@ try {
                       -Body $body
 
     Write-Host "MTU successfully set to $mtu!"
+    Write-Host "Note: If Windows is still showing MTU 2800, this is a visual bug!"
 }
 catch {
     Write-Host "Error while sending the updated configuration: $($_.Exception.Message)"
