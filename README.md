@@ -42,7 +42,7 @@ This fix:
    - Apply the correct network settings for those interfaces
    - Set IPv6 prefix policies to prioritize IPv4 over IPv6 as a workaround, since IPv6 cannot be disabled via shell commands for ZeroTier adapters.
    - activate the legacycomponent of windows "Directplay", since it's needed for some [older games](https://gitlab.winehq.org/wine/wine/-/wikis/DirectPlay-Games)
-   - (optional) Set MTU Size for the whole network. For gaming, many users prefer a lower MTU such as 1400 or even below, to potentially reduce latency and avoid large packet fragmentation. NOTE: After change Zerotier will propably still show an MTU of its default value 2800, but the size has changed to your preferred value. You can check this if you ping your ZT Opponent with `ping <ZT-Opponent-IP> -l 1500 -f`. If you have set 1400 it will "unknown error" or "need to be fragmented" as this will tell you: more than 1400 is not allowed.  
+   - (optional) Set MTU Size for the whole network. For gaming, many users prefer a lower MTU such as 1400 or even below, to potentially reduce latency and avoid large packet fragmentation. This change is an on-the-fly change and doesn't need the clients to reconnect for its activation, it's active right away! NOTE: After change Zerotier will propably still show an MTU of its default value 2800, but the size has changed to your preferred value. You can check this if you ping your ZT Opponent with `ping <ZT-Opponent-IP> -l 1500 -f`. If you have set 1400 it will "unknown error" or "need to be fragmented" as this will tell you: more than 1400 is not allowed.  
 
 ---
 
