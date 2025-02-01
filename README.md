@@ -5,6 +5,7 @@ When using **ZeroTier for LAN gaming**, some users experience issues where playe
 ✅ **Network adapter metrics**  
 ✅ **Firewall profile (public/private)**  
 ✅ **Broadcast traffic for game discovery**  
+✅ **optional: Set MTU Size for the whole network**  
 
 This tool ensures that **ZeroTier works flawlessly for LAN gaming**, even after reconnections.
 
