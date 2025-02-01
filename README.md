@@ -28,6 +28,9 @@ This fix:
 
 ---
 
+## 📥 For Updaters:
+You can just run the installer again. 
+
 ## 📥 Installation
 
 ### **Step 1: Download & Extract**
