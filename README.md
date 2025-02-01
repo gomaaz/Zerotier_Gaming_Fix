@@ -78,7 +78,7 @@ If you want to remove the fix:
 | **Network Metric Priority** | Ensure ZeroTier has priority for game traffic | Set `Metric = 1` for ZeroTier adapters                         |
 | **IPv6 Issues**             | Prioritize ipv4 Traffic if causing issues                     |  ::ffff:0:0/96 at top of the prefix table                        |
 | **Windows Network Profile** | Set ZeroTier as **Private** network           | Prevents Windows from blocking LAN traffic                     |
-| **(Optional)Change Network MTU Size** | potentially reduce latency and avoid large packet fragmentation.            | Set the Network MTU Size on ZT-network (my.zerotier.com)                     |
+| **(Optional) Change Network MTU Size** | potentially reduce latency and avoid large packet fragmentation.            | Set the Network MTU Size on ZT-network (my.zerotier.com)                     |
 
 ---
 
