@@ -57,7 +57,8 @@ You can just run the installer again.
 - add Destination "255.255.255.255/32" via "0.0.0.0" (Enables Broadcast Traffic)
 - add Destination "224.0.0.0/4" via "0.0.0.0" (Enables Multicast Traffic)
 - done.
-By default, it's not implemented for a ZT Network, since ZT focues on efficiency. Broadcasting by itself is not efficient for large network environments.
+
+By default, it's not implemented for a ZT Network, since ZT focues on efficiency. Broadcasting by itself is not efficient for large network environments (Broadcasts spread useless information for all clients). 
 
 ---
 
