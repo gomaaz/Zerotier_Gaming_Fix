@@ -66,6 +66,7 @@ echo ==============================================================
 echo.
 echo.
 xcopy "%SOURCE_DIR%\*" "%TARGET_DIR%" /Y /E
+xcopy "%SOURCE_DIR%\..\uninstall_zerotier_gaming_fix.bat" "%TARGET_DIR%" /Y
 
 
 echo.
