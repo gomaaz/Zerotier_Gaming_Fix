@@ -71,6 +71,51 @@ xcopy "%SOURCE_DIR%\..\uninstall_zerotier_gaming_fix.bat" "%TARGET_DIR%" /Y
 
 echo.
 echo.
+echo.
+echo ==============================================================
+echo [INFO] Enabling ZeroTier Multithreading...
+echo ==============================================================
+echo.
+echo.
+
+:: Get number of logical cores via PowerShell
+for /f %%A in ('powershell -Command "(Get-CimInstance Win32_Processor).NumberOfLogicalProcessors"') do set CORES=%%A
+
+:: Create ZeroTier config directory if missing
+if not exist "%ProgramData%\ZeroTier\One" (
+    mkdir "%ProgramData%\ZeroTier\One"
+)
+
+:: Generate local.conf with dynamic core count
+(
+    echo {
+    echo    "settings":
+    echo    {
+    echo        "multicoreEnabled": true,
+    echo        "concurrency": %CORES%,
+    echo        "cpuPinningEnabled": true
+    echo    }
+    echo }
+) > "%ProgramData%\ZeroTier\One\local.conf"
+
+:: Restart ZeroTier service to apply changes
+echo stop Zerotier Service
+net stop ZeroTierOneService >nul 2>&1
+echo start Zerotier Service
+net start ZeroTierOneService >nul 2>&1
+timeout /t 3 /nobreak >nul
+echo.
+:: Verify multithreading status
+echo ==============================================================
+echo [INFO] Verifying ZeroTier multithreading settings...
+echo ==============================================================
+powershell -Command "& {zerotier-cli info -j | ConvertFrom-Json | Select-Object @{Name='multicoreEnabled';Expression={$_.config.settings.multicoreEnabled}}, @{Name='concurrency';Expression={$_.config.settings.concurrency}}, @{Name='cpuPinningEnabled';Expression={$_.config.settings.cpuPinningEnabled}} | Format-List}"
+echo If "config" shows "multicoreEnabled: true", multithreading is active!
+echo Concurrency is the value taken with your max cores 
+echo if needed you can adjust concurrency in C:\ProgramData\ZeroTier\One\local.conf
+echo.
+echo.
+echo.
 echo ==============================================================
 echo [INFO] Installing scheduled task...
 echo ==============================================================
