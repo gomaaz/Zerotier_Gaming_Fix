@@ -1,11 +1,18 @@
 # Change the MTU of a ZeroTier Central-managed network.
 #
-# Requires you to be the network admin and to have an API token from
+# Requires you to be the network owner and to have an API token from
 # my.zerotier.com -> Account -> API Access Tokens.
 #
 # Sends a PATCH-style update (only the MTU field), uses the documented
 # "Authorization: token <token>" scheme, and reads the token as a
 # SecureString so it does not sit in plain text on the command line.
+#
+# Tier note: the MTU endpoint is reachable on every my.zerotier.com plan
+# (including free) - it is owner-gated, not tier-gated. A 403 typically
+# means the token belongs to a different account than the network owner.
+# Users on a self-hosted ZTNET controller (https://ztnet.network/) can
+# set the network-wide MTU directly in the dashboard instead and do not
+# need this helper at all.
 
 $ErrorActionPreference = 'Stop'
 
@@ -15,7 +22,10 @@ Write-Host ""
 Write-Host "You need:"
 Write-Host "  * an API token (my.zerotier.com -> Account -> API Access Tokens)"
 Write-Host "  * the 16-hex network ID"
-Write-Host "  * admin rights on that network"
+Write-Host "  * to be the OWNER of that network (any plan tier including free)"
+Write-Host ""
+Write-Host "If you self-host with ZTNET, set the MTU in the ZTNET dashboard"
+Write-Host "instead - no token needed."
 Write-Host ""
 
 # Read the token as SecureString so it is not echoed and is easier to clear.
@@ -82,6 +92,23 @@ try {
         Write-Host "[ERROR] Update failed (HTTP $status): $($_.Exception.Message)"
     } else {
         Write-Host "[ERROR] Update failed: $($_.Exception.Message)"
+    }
+    if ($status -eq 401 -or $status -eq 403) {
+        Write-Host ""
+        Write-Host "  Hint: 401/403 from ZeroTier Central usually means the API"
+        Write-Host "  token is for a different account than the network owner."
+        Write-Host "  The MTU endpoint is reachable on every plan tier (including"
+        Write-Host "  free), but only by the owner of the network. Check that the"
+        Write-Host "  token in your my.zerotier.com -> Account -> API Access Tokens"
+        Write-Host "  matches the account that owns network $network_id."
+        Write-Host ""
+        Write-Host "  If you self-host with ZTNET (https://ztnet.network/), set"
+        Write-Host "  the MTU in the ZTNET dashboard directly - this helper does"
+        Write-Host "  not target ZTNET."
+    } elseif ($status -eq 404) {
+        Write-Host ""
+        Write-Host "  Hint: 404 typically means the network ID '$network_id' does"
+        Write-Host "  not exist on this account, or the URL changed upstream."
     }
     exit 1
 } finally {

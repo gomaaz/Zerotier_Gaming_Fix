@@ -10,7 +10,18 @@ _Planned and in-progress changes will be listed here._
 
 ---
 
-## [v2.5.6] – 2026-05-14
+## [v2.5.7] – 2026-05-15
+
+Surfaces the ZeroTier free-tier custom-route limit (already documented in the README since v2.5.5) at the points in the install flow and the MTU helper where users actually hit it.
+
+### Added
+- `install_zerotier_gaming_fix.bat`: new info block right after *"Installation complete!"* and before the *WinIPBroadcast* prompt. Reminds the operator that the local install does nothing about controller-side managed routes, lists the two routes the README asks for, and spells out the free-tier limit (one custom route only — add `255.255.255.255/32`, skip the multicast one, or self-host with ZTNET). Also mentions the new `run.log` capture as the first stop for debugging.
+- `install_zerotier_gaming_fix.bat` *Optional MTU* section: new sub-paragraph noting that the MTU endpoint is owner-gated rather than tier-gated and that ZTNET users should use the dashboard instead.
+- `resources/change_MTU_only.bat`: same tier/owner caveat block at the top, plus an explicit ZTNET pointer.
+- `resources/update_zerotier_mtu.ps1`: extended pre-amble explains owner-gated vs tier-gated and points at ZTNET. The error handler now special-cases HTTP 401/403 (probable owner mismatch) and 404 (network ID typo / endpoint moved) with concrete hints rather than just dumping the .NET exception text.
+
+### Changed
+- `resources/update_zerotier_mtu.ps1` opening Read-Host context block now says "you OWN the network on any plan tier" instead of "admin rights" (less ambiguous; the API is owner-bound, not RBAC-bound).
 
 README only — adds a recommended setting for the four per-network checkboxes the Windows ZeroTier tray client exposes (Allow Managed Addresses / Global IPs / Default Route Override / DNS Configuration). No script change.
 

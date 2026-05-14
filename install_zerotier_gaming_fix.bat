@@ -23,7 +23,7 @@ if not defined ZGF_TEE_ACTIVE (
 cls
 
 :: Version of this installer. Keep in sync with CHANGELOG.md and the git tag.
-set ZGF_VERSION=2.5.6
+set ZGF_VERSION=2.5.7
 
 echo.
 echo.
@@ -177,9 +177,38 @@ echo ==============================================================
 echo [INFO] Installation complete! ZeroTier Auto Fix is now running.
 echo ==============================================================
 echo.
-echo You can check if network settings are met in 
-echo C:/zerotier_fix/resources/Check_Network_interfaces.bat
-echo right click -> execute with admin rights.
+echo You can check if network settings are met in
+echo C:\zerotier_fix\Check_Network_interfaces.bat
+echo right click -^> execute with admin rights.
+echo.
+echo Full output of every script (this installer, the diagnostic
+echo script, every scheduled-task fire of ZeroTier_Fix.bat, etc.)
+echo is mirrored to C:\zerotier_fix\run.log for post-mortem debugging.
+echo.
+echo.
+echo.
+echo ==============================================================
+echo [INFO] Don't forget: controller-side setup
+echo ==============================================================
+echo.
+echo This installer only touched THIS Windows machine. For peers to
+echo actually see each other's LAN broadcasts, your ZeroTier network
+echo controller must also forward broadcast/multicast. Open your
+echo network on my.zerotier.com -^> Advanced -^> Managed Routes and add:
+echo.
+echo    255.255.255.255/32  via 0.0.0.0   (broadcast - REQUIRED)
+echo    224.0.0.0/4         via 0.0.0.0   (multicast - optional)
+echo.
+echo IMPORTANT: as of late 2025 the ZeroTier free tier only allows
+echo ONE custom managed route (the new UI greys it out entirely).
+echo If you are on the free tier, add 255.255.255.255/32 only -
+echo that covers most classic LAN games. If you need both routes
+echo (mDNS/SSDP-based discovery, newer engines), the recommended
+echo workaround is to self-host the controller with ZTNET
+echo ^(https://ztnet.network/^) - free, unlimited routes, runs in a
+echo Docker container, uses the same ZeroTier peer-to-peer protocol.
+echo.
+echo See the README "Read this first" section for details.
 echo.
 echo.
 echo.
@@ -257,8 +286,16 @@ echo [Optional] Optional Part - Changing MTU Size of Controller
 echo ==============================================================
 echo.
 echo If you are the network admin of the ZeroTier controller (my.zerotier.com),
-echo you can change the MTU size to a self defined value,f.e. 1400. A lower MTU might be
+echo you can change the MTU size to a self defined value, e.g. 1400. A lower MTU might be
 echo better for gaming compared to the default ZeroTier MTU of 2800.
+echo.
+echo Requires: you OWN the network on my.zerotier.com and have an API
+echo token (Account -^> API Access Tokens). The MTU endpoint is reachable
+echo on every plan tier including free, but only network owners can use it.
+echo.
+echo If you self-host the controller with ZTNET ^(https://ztnet.network/^),
+echo set the network-wide MTU directly in the ZTNET dashboard instead -
+echo no API token needed.
 echo.
 echo Please note: These changes will be applied on-the-fly to all adapters
 echo within the ZeroTier network. This MTU setting is a maximum allowed

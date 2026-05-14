@@ -23,8 +23,19 @@ echo Changing MTU Size of Controller
 echo ==============================================================
 echo.
 echo If you are the network admin of the ZeroTier controller (my.zerotier.com),
-echo you can change the MTU size to a self defined value,f.e. 1400. A lower MTU might be
+echo you can change the MTU size to a self defined value, e.g. 1400. A lower MTU might be
 echo better for gaming compared to the default ZeroTier MTU of 2800.
+echo.
+echo Requires: you OWN the network on my.zerotier.com and have an API
+echo token (Account -^> API Access Tokens). The MTU endpoint is reachable
+echo on every plan tier including free, but only network owners can call it.
+echo If a 403 comes back, your token is for a different account than the
+echo network owner.
+echo.
+echo If you self-host with ZTNET ^(https://ztnet.network/^), set the
+echo network-wide MTU directly in the ZTNET dashboard instead - no API
+echo token needed, and unlimited custom routes too (the free tier of
+echo my.zerotier.com only allows one custom managed route as of late 2025).
 echo.
 echo Please note: These changes will be applied on-the-fly to all adapters
 echo within the ZeroTier network. This MTU setting is a maximum allowed
