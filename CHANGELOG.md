@@ -10,6 +10,15 @@ _Planned and in-progress changes will be listed here._
 
 ---
 
+## [v2.5.6] – 2026-05-14
+
+README only — adds a recommended setting for the four per-network checkboxes the Windows ZeroTier tray client exposes (Allow Managed Addresses / Global IPs / Default Route Override / DNS Configuration). No script change.
+
+### Added
+- **README** new section *"🔘 ZeroTier client per-network settings (Windows tray)"* placed between the *Enable broadcast/multicast* and *Optional MTU* sections. Recommends only **Allow Managed Addresses** be ticked, with the reasoning per option. The *Allow Default Route Override* entry is flagged as important because it directly fights the per-reconnect `route delete 0.0.0.0/0` step in `ZeroTier_Fix.bat`: if the user enables it, the controller re-pushes the default route on every reconnect and the fix has to remove it again — race condition guaranteed.
+
+---
+
 ## [v2.5.5] – 2026-05-14
 
 README only — points new users at the ZeroTier free-tier route-cap restriction *before* they go and try to add managed routes that the UI refuses. No script change.

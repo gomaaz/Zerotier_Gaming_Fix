@@ -108,6 +108,21 @@ If you self-host your own controller via [ZTNET](https://ztnet.network/), you ca
 
 ---
 
+## 🔘 ZeroTier client per-network settings (Windows tray)
+
+When you join a ZeroTier network on Windows, the tray client exposes four per-network checkboxes (right-click the ZeroTier tray icon → your network ID → submenu). For LAN gaming the recommended setting is **only the first one ticked**:
+
+| Option | Recommended | Why |
+| --- | --- | --- |
+| **Allow Managed Addresses** | ✅ **ON** | Without this, the controller can't assign your client a ZT IP — you're not really on the network. Always on. |
+| **Allow Assignment of Global IPs** | ❌ off | Lets the controller hand out *public* IP ranges (e.g. `8.8.0.0/16`) as ZT addresses. Pointless for gaming and only collides with real internet traffic. |
+| **Allow Default Route Override** | ❌ **off — important** | Lets the controller push a `0.0.0.0/0` default route, turning ZT into your *internet gateway*. That is the exact opposite of what we want for gaming (higher latency, all your traffic goes through ZT, privacy implications). `ZeroTier_Fix.bat` already deletes any `0.0.0.0/0` route it finds on a ZT adapter — if you tick this box, the controller re-pushes it on every reconnect and the fix has to delete it again. Race condition guaranteed. Leave it off. |
+| **Allow DNS Configuration** | ❌ off | Lets the controller push DNS servers. Not useful for gaming, and usually just funnels DNS through the ZT tunnel — slower, plus surprising name-resolution results. |
+
+These checkboxes are stored per-network on the client side, not on the controller, so the choice is yours regardless of who owns the ZeroTier network you're joining.
+
+---
+
 ## 🎚️ Optional: lower the network MTU
 
 ZeroTier's default MTU is **2800**. For latency-sensitive gaming, **1400 or lower** is often a better fit and helps avoid fragmentation by the underlying transport.
