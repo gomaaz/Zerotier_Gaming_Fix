@@ -23,7 +23,7 @@ if not defined ZGF_TEE_ACTIVE (
 cls
 
 :: Version of this installer. Keep in sync with CHANGELOG.md and the git tag.
-set ZGF_VERSION=2.5.3
+set ZGF_VERSION=2.5.4
 
 echo.
 echo.

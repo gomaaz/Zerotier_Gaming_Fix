@@ -10,6 +10,17 @@ _Planned and in-progress changes will be listed here._
 
 ---
 
+## [v2.5.4] – 2026-05-14
+
+README synced with the current behavior. No script changes, no installer behavior change — re-running the installer is optional and only refreshes `version.txt`.
+
+### Changed
+- README **"What it fixes"** → *Firewall profile* row now mentions the `HKLM\…\NetworkList\Profiles\{guid}\Category=1` registry persist (added in v2.5.2). Previously the README only said "Sets the ZeroTier connection to Private" without explaining why it actually *stays* Private across reconnects.
+- README **"How it works under the hood"** got a new *Logging — `C:\zerotier_fix\run.log`* sub-section describing the v2.5.2 tee wrapper: full stdout/stderr of every script is captured, run-start/end markers are timestamped, SYSTEM-context runs are now visible, and the fallback to `%TEMP%` (pre-install and during uninstall) is documented. The old line that claimed only "appends a timestamped entry on every run" was leftover v2.2.x phrasing.
+- README **Troubleshooting** now leads with *"First stop: `C:\zerotier_fix\run.log`"* — that's the actual first move for any diagnostic now that PowerShell errors inside the SYSTEM-context fix surface there.
+
+---
+
 ## [v2.5.3] – 2026-05-14
 
 Single behavioral tweak on the per-reconnect fix: ZT-adapter IPv6 metric is no longer pinned to 1.

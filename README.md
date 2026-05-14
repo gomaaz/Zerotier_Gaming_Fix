@@ -25,7 +25,7 @@ What that means for you:
 | Area | What the fix does |
 | --- | --- |
 | **Adapter metric** | Sets `InterfaceMetric = 1` on the **IPv4** stack of every ZeroTier adapter so games prefer ZT over LAN/Wi-Fi. The **IPv6** stack is set to `20` instead — deliberately deprioritized so other adapters' IPv6 wins route selection (most LAN-game discovery and older netcode is IPv4-only; we don't want ZT's IPv6 fighting native IPv6). `AutomaticMetric` is disabled on both so Windows doesn't re-derive the value from link speed at every reconnect. |
-| **Firewall profile** | Sets the ZeroTier connection to **Private** and explicitly enables the **Network Discovery** and **File and Printer Sharing** rule groups. |
+| **Firewall profile** | Sets the ZeroTier connection to **Private** *and* writes `Category=1` directly into the saved profile under `HKLM\…\NetworkList\Profiles\{guid}` — that's the on-disk value Windows' NLA service reads back at the next reconnect, so the category survives identification events that would otherwise flip ZT back to Public. Also explicitly enables the **Network Discovery** and **File and Printer Sharing** firewall rule groups. |
 | **Broadcast & multicast** | Adds persistent routes `255.255.255.255/32` and `224.0.0.0/4` on every ZeroTier adapter — needed by classic LAN broadcast, mDNS, SSDP, IGMP, and game server browsers. |
 | **IPv4 priority** | Adds Windows prefix policy `::ffff:0:0/96 100 4` so IPv4 outranks IPv6 *for dual-stack hostname resolution* (RFC 6724). Most LAN games don't speak IPv6. **Does not disable IPv6** and does not affect ZeroTier's own IPv6 transport — see FAQ below. |
 | **DirectPlay** | Enables the legacy Windows component required by some [older games](https://gitlab.winehq.org/wine/wine/-/wikis/DirectPlay-Games). |
@@ -162,12 +162,15 @@ The installer registers a Task Scheduler job that subscribes to **`Microsoft-Win
 
 This is necessary because Windows resets adapter metric, network category, and route settings on every network identification event — once at install time isn't enough.
 
-The script also appends a timestamped entry to `C:\zerotier_fix\run.log` on every run, so post-mortem diagnostics on the silent SYSTEM-context task are possible.
+### Logging — `C:\zerotier_fix\run.log`
+
+Every user-facing script (installer, uninstaller, `Check_Network_interfaces.bat`, `change_MTU_only.bat`) and the per-reconnect `ZeroTier_Fix.bat` self-re-execute through a PowerShell tee at the top, so the complete stdout/stderr stream of every run is mirrored both to the console (as before) **and** to `C:\zerotier_fix\run.log`. Each run is bracketed with `===== <script> run start =====` / `===== run end =====` timestamps. This is especially useful for the SYSTEM-context scheduled-task runs — those have no console at all, so without the tee any PowerShell error from inside the fix would be invisible. Before the first install the log goes to `%TEMP%\zerotier_fix_run.log` as fallback. The uninstaller's run is also captured (with a fallback to `%TEMP%` once `C:\zerotier_fix\` is deleted), so a failed uninstall is post-mortem-traceable too.
 
 ---
 
 ## ⚠️ Troubleshooting
 
+- **First stop: `C:\zerotier_fix\run.log`.** Every script — installer, uninstaller, `Check_Network_interfaces.bat`, and every scheduled-task fire of `ZeroTier_Fix.bat` — appends its full stdout/stderr to this file with timestamped run start/end markers. If anything misbehaved, scroll back to the last `===== <script> run start =====` and read forward. PowerShell errors inside the SYSTEM-context fix only show up here.
 - **Always run installer and diagnostic scripts as Administrator.** Anything that touches firewall, routing, or scheduled tasks needs elevation.
 - **Can you ping the peer?** Find your ZT IP with `ipconfig`, then `ping <peer-zt-ip>`. If that fails, the fix is irrelevant — your ZT network itself isn't routing.
 - **Is the connection DIRECT or RELAY?** See section 0 of `Check_Network_interfaces.bat`. RELAY means UDP port **9993** is blocked somewhere; open it on your router or check carrier-grade NAT.
