@@ -1,5 +1,5 @@
 @echo off
-echo Fixing ZeroTier network settings with IPv6 prioritization...
+echo Fixing ZeroTier network settings for LAN gaming...
 
 :: Ensure running as Administrator
 net session >nul 2>&1
@@ -41,38 +41,23 @@ for /f "tokens=1 delims=," %%A in ('powershell -NoProfile -ExecutionPolicy Bypas
 )
 
 
-:: Get ZeroTier interface index
+:: Force delete the 0.0.0.0/0 default route on EVERY ZT adapter so ZeroTier
+:: does not capture internet traffic. Iterates over all ZT adapters - the
+:: pre-v2.1.1 version only handled the last one due to a for-loop bug.
+echo [INFO] Removing ZeroTier as the default internet route on all ZT adapters...
 for /f "tokens=1" %%A in ('powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "& {Get-NetIPInterface | Where-Object { $_.InterfaceAlias -like 'ZeroTier*' } | Select-Object -ExpandProperty InterfaceIndex}"') do set ZT_IF=%%A
+    "& {Get-NetIPInterface | Where-Object { $_.InterfaceAlias -like 'ZeroTier*' } | Select-Object -ExpandProperty InterfaceIndex -Unique}"') do (
+    echo [INFO] Removing default route on ZT Interface Index %%A...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+        "& {Get-NetRoute -AddressFamily IPv4 -ErrorAction SilentlyContinue | Where-Object { $_.DestinationPrefix -eq '0.0.0.0/0' -and $_.InterfaceIndex -eq %%A } | ForEach-Object { Remove-NetRoute -InterfaceIndex $_.InterfaceIndex -DestinationPrefix $_.DestinationPrefix -Confirm:$false -ErrorAction SilentlyContinue } }"
+    netsh interface ipv4 delete route 0.0.0.0/0 interface=%%A >nul 2>&1
+)
 
-echo [INFO] Detected ZeroTier Interface Index: %ZT_IF%
+:: Legacy cleanup (<= v2.1): the old ZeroTier_PrioritizeIPv6 task and its
+:: helper script contradicted the IPv4 prefix policy set above. Dropped in
+:: v2.1.1. Safe no-op on fresh installs.
+schtasks /delete /tn "ZeroTier_PrioritizeIPv6" /f >nul 2>&1
+if exist "C:\zerotier_fix\set_ipv6_policy.ps1" del /F /Q "C:\zerotier_fix\set_ipv6_policy.ps1" >nul 2>&1
 
-:: Force delete ZeroTier Default Route (No Confirmation)
-echo [INFO] Removing ZeroTier as the default internet route...
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "& {Get-NetRoute -AddressFamily IPv4 | Where-Object { $_.DestinationPrefix -eq '0.0.0.0/0' -and $_.InterfaceIndex -eq %ZT_IF% } | ForEach-Object { Remove-NetRoute -InterfaceIndex $_.InterfaceIndex -DestinationPrefix $_.DestinationPrefix -Confirm:$false } }"
-
-:: Alternative method using netsh (if PowerShell fails)
-netsh interface ipv4 delete route 0.0.0.0/0 interface=%ZT_IF% >nul 2>&1
-
-
-
-:: Create PowerShell script to set IPv6 prefix policies for ZeroTier adapters
-set SCRIPT_PATH=C:\zerotier_fix\set_ipv6_policy.ps1
-
-(
-    echo $ztAdapters = Get-NetAdapter ^| Where-Object { $_.InterfaceAlias -like "ZeroTier*" }
-    echo foreach ($adapter in $ztAdapters^) {
-    echo     Write-Host "[INFO] Prioritizing IPv6 for: $($adapter.Name) (Index: $($adapter.ifIndex))"
-    echo     netsh interface ipv6 set interface $adapter.ifIndex ignoredefaultroutes=disabled
-    echo }
-) > "%SCRIPT_PATH%"
-
-:: Run the PowerShell script once to apply settings immediately
-powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_PATH%"
-
-:: Schedule task to ensure IPv6 priority persists on reboot
-schtasks /create /tn "ZeroTier_PrioritizeIPv6" /tr "powershell.exe -ExecutionPolicy Bypass -File %SCRIPT_PATH%" /sc onlogon /rl highest /f
-
-echo [DONE] ZeroTier network settings updated! IPv6 is now prioritized over IPv4 for ZeroTier.
+echo [DONE] ZeroTier network settings updated.
 exit

@@ -6,9 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-_Planned and in-progress changes will be listed here. See [ROADMAP.md] in the project memory for the prioritized backlog._
+_Planned and in-progress changes will be listed here._
 
 ---
+
+## [v2.1.1] – 2026-05-14
+
+First SemVer release after the switch from the `vMAJOR.MINOR` scheme. Bugfix-only — no new functionality, no install/uninstall flow changes.
+
+### Fixed
+- **Default route is now removed on every ZeroTier adapter, not just the last one.** Previously a `for /f` loop in `ZeroTier_Fix.bat` overwrote `ZT_IF` on every iteration, so the `0.0.0.0/0` route deletion only ran against whichever adapter happened to come last. Users with multiple concurrent ZT networks would see ZT capture internet traffic on every adapter except one.
+
+### Removed
+- **Removed the `ZeroTier_PrioritizeIPv6` scheduled task and its helper script.** The task ran `netsh interface ipv6 set interface <idx> ignoredefaultroutes=disabled` on every logon, which directly contradicted the IPv4-prefix-priority set elsewhere in the same fix. Behavior was self-cancelling; the task is now dropped and existing installs are cleaned up automatically on the next reconnect (`schtasks /delete` + helper script deletion run as a no-op safe legacy cleanup).
 
 ## [v2.1] – 2025-02-10
 
@@ -92,7 +102,8 @@ _Planned and in-progress changes will be listed here. See [ROADMAP.md] in the pr
   - Prioritizes IPv4 over IPv6 via prefix policy `::ffff:0:0/96`.
   - Removes the `0.0.0.0/0` default route on ZT adapters so ZT doesn't capture internet traffic.
 
-[Unreleased]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.1...HEAD
+[Unreleased]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.1.1...HEAD
+[v2.1.1]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.1...v2.1.1
 [v2.1]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.0...v2.1
 [v2.0]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v1.9...v2.0
 [v1.9]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v1.8...v1.9
