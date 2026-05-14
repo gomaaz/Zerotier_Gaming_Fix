@@ -1,4 +1,28 @@
 @echo off
+
+:: ================================================================
+:: Persistent-Shell-Trick: Wenn dieses Skript via Explorer-Doppelklick
+:: oder "Als Administrator ausfuehren" gestartet wurde, oeffnet
+:: Windows die cmd mit /c — das Konsolenfenster schliesst nach
+:: Skriptende sofort, selbst wenn 'pause' am Ende stehen, weil ein
+:: vorheriges powershell.exe Reste im stdin-Buffer hinterlassen kann
+:: und 'pause' dann instant zurueckkehrt.
+:: Loesung: Wenn unser Skriptname in %cmdcmdline% steht (also: die
+:: aktuelle cmd wurde NUR fuer dieses Skript gestartet), re-launchen
+:: wir uns selbst in einer persistenten Shell (cmd /k). Das Fenster
+:: bleibt dann nach Skriptende offen und kann nur manuell mit
+:: 'exit' oder dem X-Button geschlossen werden.
+:: Marker-Variable ZGF_PERSISTENT verhindert Endlos-Re-Exec.
+:: ================================================================
+if not defined ZGF_PERSISTENT (
+    echo %cmdcmdline% | findstr /i /c:"%~nx0" >nul
+    if not errorlevel 1 (
+        set "ZGF_PERSISTENT=1"
+        cmd /k ""%~f0""
+        exit /b
+    )
+)
+
 cls
 echo.
 echo.
@@ -177,11 +201,13 @@ if exist "%SUMMARY_PS1%" (
 
 echo.
 echo ==============================================================
-echo Druecken Sie eine beliebige Taste, um das Fenster zu schliessen.
+echo Diagnose beendet. Fenster manuell schliessen, wenn fertig.
+echo (im persistenten Modus: 'exit' tippen oder Fenster-X klicken)
 echo ==============================================================
-:: Doppelter Pause-Wait ist Absicht: nach powershell.exe kann der
-:: Console-Input-Buffer "Reste" enthalten, sodass ein einzelnes
-:: pause sofort zurueckkehrt und das Fenster zu schnell schliesst.
-:: Erstes pause konsumiert den Buffer, zweites wartet auf den User.
-pause >nul
-pause >nul
+echo.
+:: Bei Aufruf aus einer offenen cmd-Shell (kein Re-Exec oben) wartet
+:: pause hier und der User kehrt nach Tastendruck in seine Shell
+:: zurueck. Im Re-Exec-Fall (cmd /k) macht pause nichts Schlimmes:
+:: der Tastendruck endet das Skript, und cmd /k haelt das Fenster
+:: trotzdem offen — der User sieht danach den cmd-Prompt.
+pause

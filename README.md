@@ -6,6 +6,20 @@ When you use **ZeroTier for LAN gaming**, players often **can't see each other i
 
 ---
 
+## 🛑 Heads-up: this is a vibe-coding project
+
+This repo is a **vibe-coding project** — built iteratively with AI assistance, driven by what worked on the author's own gaming setup rather than by formal engineering process. There are **no automated tests**, no CI, and no professional code review. Scripts are validated by running them on real Windows machines and watching whether LAN games actually discover each other; that's the whole QA pipeline.
+
+What that means for you:
+
+- It works well for the **typical home gaming scenario** it was built around (Windows 10/11, ZeroTier 1.14–1.16, handful of peers, LAN game discovery).
+- Edge cases, exotic network setups, enterprise/managed Windows, or future ZeroTier versions may break in ways nobody has tried yet.
+- If something doesn't work, the best path is to read [Check_Network_interfaces.bat](resources/Check_Network_interfaces.bat) output, open an issue with the diagnostic, and treat the fix as a starting point you can adapt — not a hardened product.
+
+**See the full disclaimer at the bottom of this README before running anything.** TL;DR: it modifies your network stack with Admin rights; back up first, run at your own risk.
+
+---
+
 ## ✅ What it fixes
 
 | Area | What the fix does |
