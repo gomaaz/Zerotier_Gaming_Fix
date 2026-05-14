@@ -4,15 +4,8 @@
 :: Persistent-Shell-Trick: Wenn dieses Skript via Explorer-Doppelklick
 :: oder "Als Administrator ausfuehren" gestartet wurde, oeffnet
 :: Windows die cmd mit /c — das Konsolenfenster schliesst nach
-:: Skriptende sofort, selbst wenn 'pause' am Ende stehen, weil ein
-:: vorheriges powershell.exe Reste im stdin-Buffer hinterlassen kann
-:: und 'pause' dann instant zurueckkehrt.
-:: Loesung: Wenn unser Skriptname in %cmdcmdline% steht (also: die
-:: aktuelle cmd wurde NUR fuer dieses Skript gestartet), re-launchen
-:: wir uns selbst in einer persistenten Shell (cmd /k). Das Fenster
-:: bleibt dann nach Skriptende offen und kann nur manuell mit
-:: 'exit' oder dem X-Button geschlossen werden.
-:: Marker-Variable ZGF_PERSISTENT verhindert Endlos-Re-Exec.
+:: Skriptende sofort. Wenn unser Skriptname in %cmdcmdline% steht,
+:: re-launchen wir uns in einer persistenten Shell (cmd /k).
 :: ================================================================
 if not defined ZGF_PERSISTENT (
     echo %cmdcmdline% | findstr /i /c:"%~nx0" >nul
@@ -21,6 +14,26 @@ if not defined ZGF_PERSISTENT (
         cmd /k ""%~f0""
         exit /b
     )
+)
+
+:: ================================================================
+:: Tee-Wrapper: alles, was dieses Skript ausgibt (stdout + stderr),
+:: wird in C:\zerotier_fix\run.log mitgeschrieben UND live auf der
+:: Konsole gezeigt. Damit ist die komplette Diagnose-Ausgabe (inkl.
+:: Summary-Tabelle, raw netsh/powershell-Output, Fehler-Messages)
+:: nachtraeglich aus der Logdatei lesbar. Fallback-Pfad %TEMP%
+:: greift, falls C:\zerotier_fix\ noch nicht existiert (z.B. Aufruf
+:: aus dem entpackten Release-ZIP, vor dem ersten Install).
+:: Marker ZGF_TEE_ACTIVE verhindert Endlos-Re-Exec.
+:: ================================================================
+if not defined ZGF_TEE_ACTIVE (
+    set "ZGF_TEE_ACTIVE=1"
+    set "LOGFILE=C:\zerotier_fix\run.log"
+    if not exist "C:\zerotier_fix" set "LOGFILE=%TEMP%\zerotier_fix_run.log"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Content -Path $env:LOGFILE -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ===== %~nx0 run start =====')"
+    cmd /c ""%~f0"" 2>&1 | powershell -NoProfile -ExecutionPolicy Bypass -Command "$input | ForEach-Object { Write-Host $_; Add-Content -Path $env:LOGFILE -Value $_ }"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Content -Path $env:LOGFILE -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ===== %~nx0 run end =====')"
+    exit /b
 )
 
 cls

@@ -1,8 +1,29 @@
 @echo off
+
+:: ================================================================
+:: Tee-Wrapper: spiegelt stdout/stderr in run.log und auf Konsole.
+:: Logfile-Pfad: C:\zerotier_fix\run.log (faellt auf %TEMP% zurueck
+:: vor dem ersten Install, wenn C:\zerotier_fix\ noch nicht existiert).
+:: set /p Prompts in diesem Skript muessen als getrennte echo-Zeile
+:: gefolgt von prompt-loser set /p geschrieben sein, sonst puffert
+:: die PowerShell-Pipe den Prompt bis nach dem Enter (User sieht
+:: nichts) - siehe Stellen "WinIPBroadcast" und "MTU" weiter unten.
+:: Marker ZGF_TEE_ACTIVE verhindert Endlos-Re-Exec.
+:: ================================================================
+if not defined ZGF_TEE_ACTIVE (
+    set "ZGF_TEE_ACTIVE=1"
+    set "LOGFILE=C:\zerotier_fix\run.log"
+    if not exist "C:\zerotier_fix" set "LOGFILE=%TEMP%\zerotier_fix_run.log"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Content -Path $env:LOGFILE -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ===== %~nx0 run start =====')"
+    cmd /c ""%~f0"" 2>&1 | powershell -NoProfile -ExecutionPolicy Bypass -Command "$input | ForEach-Object { Write-Host $_; Add-Content -Path $env:LOGFILE -Value $_ }"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Content -Path $env:LOGFILE -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ===== %~nx0 run end =====')"
+    exit /b
+)
+
 cls
 
 :: Version of this installer. Keep in sync with CHANGELOG.md and the git tag.
-set ZGF_VERSION=2.5.1
+set ZGF_VERSION=2.5.2
 
 echo.
 echo.
@@ -182,7 +203,8 @@ echo Requires an internet connection for the one-time download.
 echo Skip this if your games already work without it, or if you prefer
 echo not to install third-party services.
 echo.
-set /p wantwib=Install WinIPBroadcast as a service? (y/n):
+echo Install WinIPBroadcast as a service? (y/n):
+set /p wantwib=
 
 if /i "%wantwib%"=="y"   goto INSTALLWIB
 if /i "%wantwib%"=="yes" goto INSTALLWIB
@@ -191,14 +213,26 @@ goto SKIPWIB
 
 :INSTALLWIB
 set WIB_VERSION=1.6
-set WIB_URL=https://github.com/dechamps/WinIPBroadcast/releases/download/winipbroadcast-%WIB_VERSION%/WinIPBroadcast.exe
+:: Upstream asset name includes the version, e.g. WinIPBroadcast-1.6.exe.
+:: Versions of this installer prior to v2.5.2 used 'WinIPBroadcast.exe'
+:: here, which has always 404'd against the GitHub release (the optional
+:: WinIPBroadcast install could therefore never succeed). Local target
+:: filename stays WinIPBroadcast.exe because the service binary and
+:: 'WinIPBroadcast.exe install' subcommand expect that name.
+set WIB_URL=https://github.com/dechamps/WinIPBroadcast/releases/download/winipbroadcast-%WIB_VERSION%/WinIPBroadcast-%WIB_VERSION%.exe
 set WIB_DIR=%ProgramFiles%\WinIPBroadcast
 set WIB_EXE=%WIB_DIR%\WinIPBroadcast.exe
 
 if not exist "%WIB_DIR%" mkdir "%WIB_DIR%"
 
 echo [INFO] Downloading WinIPBroadcast %WIB_VERSION% from GitHub...
-powershell -NoProfile -Command "try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%WIB_URL%' -OutFile '%WIB_EXE%' -UseBasicParsing -TimeoutSec 30; if ((Get-Item '%WIB_EXE%').Length -lt 1024) { throw 'Downloaded file is suspiciously small.' }; Write-Host '[INFO] Downloaded WinIPBroadcast.exe' ((Get-Item '%WIB_EXE%').Length) 'bytes.' } catch { Write-Host '[ERROR] Download failed:' $_.Exception.Message; exit 1 }"
+:: Hardened download: enable TLS 1.2 AND (if the .NET enum exposes it)
+:: TLS 1.3, retry up to 3 times with a short backoff to survive transient
+:: GitHub connection drops ("Die Anfrage wurde abgebrochen: Die Verbindung
+:: wurde unerwartet getrennt." has been observed once on flaky links),
+:: and send an explicit User-Agent because some CDN layers reject the
+:: PowerShell default.
+powershell -NoProfile -Command "try { $tls=[Net.SecurityProtocolType]::Tls12; try { $tls = $tls -bor [Net.SecurityProtocolType]::Tls13 } catch {}; [Net.ServicePointManager]::SecurityProtocol = $tls; $ok=$false; for ($i=1; $i -le 3 -and -not $ok; $i++) { try { Invoke-WebRequest -Uri '%WIB_URL%' -OutFile '%WIB_EXE%' -UseBasicParsing -TimeoutSec 30 -UserAgent 'Mozilla/5.0 ZeroTierGamingFix'; $ok=$true } catch { if ($i -lt 3) { Write-Host ('[WARN] Download attempt ' + $i + ' failed: ' + $_.Exception.Message + ' - retrying in 3s...'); Start-Sleep -Seconds 3 } else { throw } } }; if ((Get-Item '%WIB_EXE%').Length -lt 1024) { throw 'Downloaded file is suspiciously small.' }; Write-Host '[INFO] Downloaded WinIPBroadcast.exe' ((Get-Item '%WIB_EXE%').Length) 'bytes.' } catch { Write-Host '[ERROR] Download failed after retries:' $_.Exception.Message; exit 1 }"
 if errorlevel 1 (
     echo [WARN] Could not download WinIPBroadcast. Skipping service install.
     echo        You can install it manually later: download from the URL above,
@@ -238,7 +272,8 @@ echo.
 echo.
 echo.
 echo Would you like to change MTU Size now? You need to be network admin (y/n)
-set /p wantmtu=Your choice:
+echo Your choice:
+set /p wantmtu=
 
 :: Check if user typed "y" or "yes"
 if /i "%wantmtu%"=="y"   goto CHANGEMTU

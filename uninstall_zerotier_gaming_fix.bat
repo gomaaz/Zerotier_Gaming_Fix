@@ -1,4 +1,24 @@
 @echo off
+
+:: ================================================================
+:: Tee-Wrapper: alle stdout/stderr in run.log und auf Konsole. Kein
+:: set /p in diesem Skript, daher keine Pipe-Interaktivitaetsprobleme.
+:: Logfile-Pfad bleibt waehrend des Uninstall stehen, weil run.log
+:: erst am Ende mit dem rest von C:\zerotier_fix\ geloescht wird;
+:: dafuer schreiben wir die finale Run-End-Marker erst NACH dem rmdir
+:: in den TEMP-Fallback, damit der letzte Lauf nicht verloren geht.
+:: Marker ZGF_TEE_ACTIVE verhindert Endlos-Re-Exec.
+:: ================================================================
+if not defined ZGF_TEE_ACTIVE (
+    set "ZGF_TEE_ACTIVE=1"
+    set "LOGFILE=C:\zerotier_fix\run.log"
+    if not exist "C:\zerotier_fix" set "LOGFILE=%TEMP%\zerotier_fix_run.log"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Content -Path $env:LOGFILE -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ===== %~nx0 run start =====')"
+    cmd /c ""%~f0"" 2>&1 | powershell -NoProfile -ExecutionPolicy Bypass -Command "$input | ForEach-Object { Write-Host $_; $p=$env:LOGFILE; if (Test-Path (Split-Path $p)) { Add-Content -Path $p -Value $_ } else { Add-Content -Path ($env:TEMP + '\zerotier_fix_run.log') -Value $_ } }"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "$p=$env:LOGFILE; if (-not (Test-Path (Split-Path $p))) { $p=$env:TEMP + '\zerotier_fix_run.log' }; Add-Content -Path $p -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ===== %~nx0 run end =====')"
+    exit /b
+)
+
 echo.
 echo.
 echo  8888P                   w   w               .d88b                 w                d8b w       

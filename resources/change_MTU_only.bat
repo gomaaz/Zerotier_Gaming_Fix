@@ -1,4 +1,19 @@
 @echo off
+
+:: ================================================================
+:: Tee-Wrapper: alle stdout/stderr in run.log und auf Konsole.
+:: Marker ZGF_TEE_ACTIVE verhindert Endlos-Re-Exec.
+:: ================================================================
+if not defined ZGF_TEE_ACTIVE (
+    set "ZGF_TEE_ACTIVE=1"
+    set "LOGFILE=C:\zerotier_fix\run.log"
+    if not exist "C:\zerotier_fix" set "LOGFILE=%TEMP%\zerotier_fix_run.log"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Content -Path $env:LOGFILE -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ===== %~nx0 run start =====')"
+    cmd /c ""%~f0"" 2>&1 | powershell -NoProfile -ExecutionPolicy Bypass -Command "$input | ForEach-Object { Write-Host $_; Add-Content -Path $env:LOGFILE -Value $_ }"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Content -Path $env:LOGFILE -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ===== %~nx0 run end =====')"
+    exit /b
+)
+
 cls
 set TARGET_DIR=C:\zerotier_fix
 echo.
@@ -23,7 +38,8 @@ echo.
 echo.
 echo.
 echo Would you like to change MTU Size now? You need to be network admin (y/n)
-set /p wantmtu=Your choice:
+echo Your choice:
+set /p wantmtu=
 
 :: Check if user typed "y" or "yes"
 if /i "%wantmtu%"=="y"   goto CHANGEMTU

@@ -1,4 +1,22 @@
 @echo off
+
+:: ================================================================
+:: Tee-Wrapper: SYSTEM-Context-Lauf ohne Konsole - daher wuerden
+:: stdout/stderr ungeloggt verfallen. Wir piping alles durch
+:: PowerShell und schreiben es in run.log (mit Run-Header/Footer).
+:: Da kein User-Input passiert (set /p etc.), gibt's keine
+:: Pipe-Interaktivitaetsprobleme. Marker ZGF_TEE_ACTIVE verhindert
+:: Endlos-Re-Exec.
+:: ================================================================
+if not defined ZGF_TEE_ACTIVE (
+    set "ZGF_TEE_ACTIVE=1"
+    set "LOGFILE=%~dp0run.log"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Content -Path $env:LOGFILE -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ===== %~nx0 run start =====')"
+    cmd /c ""%~f0"" 2>&1 | powershell -NoProfile -ExecutionPolicy Bypass -Command "$input | ForEach-Object { Write-Host $_; Add-Content -Path $env:LOGFILE -Value $_ }"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Add-Content -Path $env:LOGFILE -Value ('[' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '] ===== %~nx0 run end =====')"
+    exit /b 0
+)
+
 echo Fixing ZeroTier network settings for LAN gaming...
 
 :: Ensure running as Administrator
@@ -9,23 +27,30 @@ if %errorLevel% neq 0 (
     exit /b
 )
 
-:: Run log - appended on every fire of the scheduled task so failures are
-:: traceable after the fact. SYSTEM-context runs have no console.
-set LOGFILE=%~dp0run.log
-echo. >> "%LOGFILE%"
-echo [%date% %time%] ZeroTier_Fix.bat run start >> "%LOGFILE%"
+echo [%date% %time%] ZeroTier_Fix.bat run start
 
 :: Detect all ZeroTier adapter indexes once. Matches both InterfaceDescription
 :: (vendor-set, stable) and InterfaceAlias (user-renameable) so renamed
 :: adapters and unusual setups are still picked up. PowerShell emits the
 :: indexes as a single comma-joined line that we can reuse for every
 :: subsequent block.
-for /f "usebackq delims=" %%I in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "& {(Get-NetAdapter ^| Where-Object { $_.InterfaceDescription -like '*ZeroTier*' -or $_.InterfaceAlias -like 'ZeroTier*' } ^| Select-Object -ExpandProperty ifIndex) -join ','}"`) do set ZT_IDX=%%I
+:: We route the PS output through a temp file rather than `for /f` with
+:: backticks: the latter requires cmd-escape (^|) for the PS pipes, and
+:: that escape gets eaten one layer too early when this script is itself
+:: invoked via cmd /c inside the tee wrapper. PowerShell then sees a
+:: literal '^|' and bails with "Es wurde kein Positionsparameter
+:: gefunden, der das Argument '^' akzeptiert.". The temp-file form puts
+:: the pipes inside the quoted -Command string where cmd never tries to
+:: parse them as a pipeline.
+set "ZGF_IDX_TMP=%TEMP%\zgf_zt_idx.txt"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "& {(Get-NetAdapter | Where-Object { $_.InterfaceDescription -like '*ZeroTier*' -or $_.InterfaceAlias -like 'ZeroTier*' } | Select-Object -ExpandProperty ifIndex) -join ','}" > "%ZGF_IDX_TMP%" 2>nul
+set ZT_IDX=
+if exist "%ZGF_IDX_TMP%" set /p ZT_IDX=<"%ZGF_IDX_TMP%"
+del "%ZGF_IDX_TMP%" >nul 2>&1
 
 if "%ZT_IDX%"=="" (
     echo [WARN] No ZeroTier adapters detected. Nothing to do.
-    echo [%date% %time%] ZeroTier_Fix.bat: no ZT adapters found, exiting >> "%LOGFILE%"
-    exit /b
+    exit /b 0
 )
 echo [INFO] ZT adapter indexes: %ZT_IDX%
 
@@ -48,13 +73,24 @@ if not exist "%BACKUP_FILE%" (
 echo [INFO] Prioritizing IPv4 over IPv6...
 netsh interface ipv6 set prefixpolicy ::ffff:0:0/96 100 4
 
-:: Set metric to 1 for all ZeroTier adapters.
+:: Set metric to 1 for all ZeroTier adapters. AutomaticMetric must be
+:: disabled together with the manual metric value, otherwise Windows
+:: re-derives the metric from link speed on the next reconnect (~35 for
+:: a 1 Gbps virtual adapter) and our value of 1 is silently overwritten.
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "& {$idx=@(%ZT_IDX%); Get-NetIPInterface | Where-Object { $_.InterfaceIndex -in $idx } | ForEach-Object { Set-NetIPInterface -InterfaceIndex $_.InterfaceIndex -InterfaceMetric 1 -ErrorAction SilentlyContinue } }"
+    "& {$idx=@(%ZT_IDX%); Get-NetIPInterface | Where-Object { $_.InterfaceIndex -in $idx } | ForEach-Object { Set-NetIPInterface -InterfaceIndex $_.InterfaceIndex -AddressFamily $_.AddressFamily -AutomaticMetric Disabled -InterfaceMetric 1 -ErrorAction SilentlyContinue } }"
 
 :: Set all ZeroTier connection profiles to Private (firewall profile).
+:: Set-NetConnectionProfile writes the live category, but Windows' NLA
+:: service often re-identifies ZeroTier-style virtual adapters as Public
+:: on the next identification event (no domain membership, no DC-issued
+:: DNS suffix). To make Private stick, we ALSO write Category=1 directly
+:: into the saved profile under HKLM\NetworkList\Profiles, matched by
+:: ProfileName — that is the on-disk value NLA reads back at reconnect.
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "& {$idx=@(%ZT_IDX%); Get-NetConnectionProfile | Where-Object { $_.InterfaceIndex -in $idx } | ForEach-Object { Set-NetConnectionProfile -Name $_.Name -NetworkCategory Private -ErrorAction SilentlyContinue } }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "& {$idx=@(%ZT_IDX%); $names=@(Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.InterfaceIndex -in $idx } | Select-Object -ExpandProperty Name); if ($names.Count -gt 0) { Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkList\Profiles' -ErrorAction SilentlyContinue | ForEach-Object { $pn=(Get-ItemProperty -Path $_.PSPath -Name ProfileName -ErrorAction SilentlyContinue).ProfileName; if ($pn -and ($names -contains $pn)) { Set-ItemProperty -Path $_.PSPath -Name Category -Value 1 -ErrorAction SilentlyContinue } } } }"
 
 :: Add LAN-discovery routes on every ZT adapter:
 ::   * 255.255.255.255/32 - classic LAN broadcast discovery
@@ -91,6 +127,11 @@ for %%A in (%ZT_IDX:,= %) do (
 schtasks /delete /tn "ZeroTier_PrioritizeIPv6" /f >nul 2>&1
 if exist "C:\zerotier_fix\set_ipv6_policy.ps1" del /F /Q "C:\zerotier_fix\set_ipv6_policy.ps1" >nul 2>&1
 
-echo [%date% %time%] ZeroTier_Fix.bat run end >> "%LOGFILE%"
+echo [%date% %time%] ZeroTier_Fix.bat run end
 echo [DONE] ZeroTier network settings updated.
-exit
+
+:: Explicit success exit so idempotent cleanups above (schtasks /delete
+:: of a legacy task that does not exist on fresh installs -> errorlevel 1,
+:: route -p add of an already-present route -> errorlevel 1, etc.) do
+:: not bleed errorlevel into the scheduled-task LastTaskResult.
+exit /b 0

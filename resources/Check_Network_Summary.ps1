@@ -65,12 +65,16 @@ if (-not $ztProf) {
     }
 }
 
-# [3] IPv6 prefix policy ::ffff:0:0/96 100 4
+# [3] IPv6 prefix policy ::ffff:0:0/96 with precedence 100
+# netsh prints the columns as "Precedence Label Prefix" (both EN and DE
+# locales), so we match the precedence number at the start of the line
+# containing our prefix - not "<prefix> 100 4" which was wrong.
 $pp = netsh interface ipv6 show prefixpolicies 2>$null
-if ($pp -match '::ffff:0:0/96\s+100\s+4') {
-    $results += New-Result 3 'IPv6 prefix policy' 'OK' '::ffff:0:0/96 precedence=100 label=4'
+$ppLine = $pp | Where-Object { $_ -match '::ffff:0:0/96' } | Select-Object -First 1
+if ($ppLine -and $ppLine -match '^\s*100\s+\d+\s+::ffff:0:0/96\s*$') {
+    $results += New-Result 3 'IPv6 prefix policy' 'OK' '::ffff:0:0/96 precedence=100'
 } else {
-    $results += New-Result 3 'IPv6 prefix policy' 'FAIL' '::ffff:0:0/96 100 4 missing (IPv4 not prioritized)'
+    $results += New-Result 3 'IPv6 prefix policy' 'FAIL' '::ffff:0:0/96 precedence=100 missing (IPv4 not prioritized)'
 }
 
 # [4] No ::/0 default route on ZT (IPv6)
@@ -150,9 +154,13 @@ Write-Host '=============================================================='
 
 $results | Format-Table -AutoSize -Property '#', Section, Status, Details | Out-String -Width 200 | Write-Host
 
-$fail = ($results | Where-Object { $_.Status -eq 'FAIL' }).Count
-$warn = ($results | Where-Object { $_.Status -eq 'WARN' }).Count
-$ok   = ($results | Where-Object { $_.Status -eq 'OK'   }).Count
+# @(...) wrap so .Count returns 0 (not $null) when zero items match,
+# and returns the correct int when exactly one item matches (without
+# the wrap, Where-Object returns a single PSCustomObject and .Count
+# on that is unreliable in Windows PowerShell 5.1).
+$fail = @($results | Where-Object { $_.Status -eq 'FAIL' }).Count
+$warn = @($results | Where-Object { $_.Status -eq 'WARN' }).Count
+$ok   = @($results | Where-Object { $_.Status -eq 'OK'   }).Count
 
 Write-Host ('OK={0}  WARN={1}  FAIL={2}' -f $ok, $warn, $fail)
 Write-Host ''
