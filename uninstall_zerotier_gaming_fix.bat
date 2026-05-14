@@ -90,6 +90,28 @@ for /f "tokens=1" %%A in ('powershell -NoProfile -ExecutionPolicy Bypass -Comman
 
 echo.
 echo ==============================================================
+echo [INFO] Removing WinIPBroadcast service (if installed by us)...
+echo ==============================================================
+echo.
+:: Only remove WinIPBroadcast if it sits at the path our installer
+:: uses - that way a separately-installed copy elsewhere is left
+:: untouched.
+if exist "%ProgramFiles%\WinIPBroadcast\WinIPBroadcast.exe" (
+    echo [INFO] Stopping and unregistering WinIPBroadcast service...
+    "%ProgramFiles%\WinIPBroadcast\WinIPBroadcast.exe" remove >nul 2>&1
+    timeout /t 2 /nobreak >nul
+    rd /S /Q "%ProgramFiles%\WinIPBroadcast" >nul 2>&1
+    if exist "%ProgramFiles%\WinIPBroadcast" (
+        echo [WARN] Could not fully remove %ProgramFiles%\WinIPBroadcast - delete manually.
+    ) else (
+        echo [DONE] WinIPBroadcast removed.
+    )
+) else (
+    echo [INFO] WinIPBroadcast not present at the standard install path; nothing to do.
+)
+
+echo.
+echo ==============================================================
 echo [INFO] Restoring ZeroTier local.conf...
 echo ==============================================================
 echo.

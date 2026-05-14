@@ -2,7 +2,7 @@
 cls
 
 :: Version of this installer. Keep in sync with CHANGELOG.md and the git tag.
-set ZGF_VERSION=2.3.0
+set ZGF_VERSION=2.4.0
 
 echo.
 echo.
@@ -160,6 +160,62 @@ echo You can check if network settings are met in
 echo C:/zerotier_fix/resources/Check_Network_interfaces.bat
 echo right click -> execute with admin rights.
 echo.
+echo.
+echo.
+echo ==============================================================
+echo [Optional] WinIPBroadcast - extended LAN discovery for older games
+echo ==============================================================
+echo.
+echo Some older games (DirectPlay-based: Age of Empires II, classic
+echo Command and Conquer, Quake 3 derivatives, Half-Life 1 mods, ...)
+echo rely on LAN discovery that Windows' own broadcast handling does
+echo not fully forward over virtual adapters like ZeroTier. WinIPBroadcast
+echo is a small open-source helper that rebroadcasts IP broadcasts
+echo across all interfaces and is the recommended fallback per the
+echo README.
+echo.
+echo   Source : https://github.com/dechamps/WinIPBroadcast
+echo   License: GPL-3.0
+echo   Size   : about 1 MB, idle CPU usage is zero
+echo.
+echo Requires an internet connection for the one-time download.
+echo Skip this if your games already work without it, or if you prefer
+echo not to install third-party services.
+echo.
+set /p wantwib=Install WinIPBroadcast as a service? (y/n):
+
+if /i "%wantwib%"=="y"   goto INSTALLWIB
+if /i "%wantwib%"=="yes" goto INSTALLWIB
+echo You answered no. Skipping WinIPBroadcast.
+goto SKIPWIB
+
+:INSTALLWIB
+set WIB_VERSION=1.6
+set WIB_URL=https://github.com/dechamps/WinIPBroadcast/releases/download/winipbroadcast-%WIB_VERSION%/WinIPBroadcast.exe
+set WIB_DIR=%ProgramFiles%\WinIPBroadcast
+set WIB_EXE=%WIB_DIR%\WinIPBroadcast.exe
+
+if not exist "%WIB_DIR%" mkdir "%WIB_DIR%"
+
+echo [INFO] Downloading WinIPBroadcast %WIB_VERSION% from GitHub...
+powershell -NoProfile -Command "try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%WIB_URL%' -OutFile '%WIB_EXE%' -UseBasicParsing -TimeoutSec 30; if ((Get-Item '%WIB_EXE%').Length -lt 1024) { throw 'Downloaded file is suspiciously small.' }; Write-Host '[INFO] Downloaded WinIPBroadcast.exe' ((Get-Item '%WIB_EXE%').Length) 'bytes.' } catch { Write-Host '[ERROR] Download failed:' $_.Exception.Message; exit 1 }"
+if errorlevel 1 (
+    echo [WARN] Could not download WinIPBroadcast. Skipping service install.
+    echo        You can install it manually later: download from the URL above,
+    echo        place it in %WIB_DIR%, then run "WinIPBroadcast.exe install".
+    goto SKIPWIB
+)
+
+echo [INFO] Installing WinIPBroadcast service...
+"%WIB_EXE%" install
+if errorlevel 1 (
+    echo [WARN] WinIPBroadcast service install reported a non-zero exit code.
+    echo        It may already be installed - check with: sc query WinIPBroadcast
+) else (
+    echo [DONE] WinIPBroadcast service installed and started.
+)
+
+:SKIPWIB
 echo.
 echo.
 echo ==============================================================
