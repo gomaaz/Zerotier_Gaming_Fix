@@ -1,0 +1,22 @@
+# Release artifacts (built per-release by Compress-Archive)
+*.zip
+
+# Local build / temp artifacts
+*.bak
+*.log
+*.tmp
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Claude Code working files (kept locally, never published)
+CLAUDE.MD
+CLAUDE.md
+.claude/
