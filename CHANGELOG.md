@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+_Planned and in-progress changes will be listed here._
+
+---
+
+## [v2.5.0] – 2026-05-14
+
+Diagnostic UX improvement. The per-block raw output of `Check_Network_interfaces.bat` is unchanged; what's new is a one-glance verdict at the end of the run, plus a fix for the window auto-closing on some setups.
+
 ### Added
 - **`Check_Network_interfaces.bat` now ends with a compact pass/fail summary table.** A new helper script `resources/Check_Network_Summary.ps1` evaluates each of the diagnostic blocks (DirectPlay, ZT adapter metric, network category, IPv6 prefix policy, default-route cleanup on IPv4/IPv6, persistent broadcast route, scheduled-task `LastTaskResult`, optional WinIPBroadcast service) and prints a single `# | Section | Status | Details` table with overall `OK=/WARN=/FAIL=` counts. The user no longer has to scroll back through eight raw sections to know whether the fix is delivering — the verdict is on the screen right before the `pause`. Raw per-block output is unchanged.
 
