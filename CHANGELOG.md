@@ -10,6 +10,24 @@ _Planned and in-progress changes will be listed here._
 
 ---
 
+## [v2.4.2] – 2026-05-14
+
+Documentation overhaul — no functional change to scripts.
+
+### Changed
+- **README restructured end-to-end** to match the actual v2.4.x install behavior. New section flow: *What it fixes → Requirements → Installation → ZeroTier-side setup → Optional MTU → Updating → Uninstalling → Verifying → How it works → Troubleshooting → Linux/macOS peers → Q&A → Disclaimer.*
+- **"What it fixes"** is now a two-column reference table (adapter metric, firewall profile, broadcast/multicast routes, IPv4 priority, DirectPlay, default-route cleanup, optional WinIPBroadcast, optional MTU). Replaces two duplicated feature lists from earlier versions.
+- **Installation section** now accurately lists every step the installer performs in v2.4.x: `version.txt`, `local.conf` backup, the WinIPBroadcast prompt, the MTU prompt, the scheduled task being run once at the end.
+- **Uninstall section** now accurately lists every cleanup step: persistent-route deletion on every ZT adapter, `local.conf` restore from the most recent backup (or deletion), WinIPBroadcast service removal, scheduled-task removal, IPv6 prefix-policy restoration, DirectPlay disable.
+- **"How it works" section** documents the Task Scheduler trigger (Network-Profile Event ID 10000), the SYSTEM-context execution, and the `run.log` per-reconnect trail.
+- **"Verifying the fix" section** lists all eight diagnostic blocks of `Check_Network_interfaces.bat` (`[0]` DirectPlay … `[8]` WinIPBroadcast service status) with the expected output per block.
+- **Optional MTU change** is now its own section with a verification ping example, rather than a single long paragraph buried inside Installation.
+- **Multi-core / ZeroTier 1.16 note** is in its own subsection under Requirements, clearly stating that the staged setting is forward-compatible but inert on Windows today.
+- Installer bumped to `ZGF_VERSION=2.4.2` so the installed `version.txt` matches the tag for users who download this release.
+
+### Fixed
+- Numerous README typos, broken bold markers, inconsistent capitalization (`windows`/`Windows`, `ipv4`/`IPv4`, `Directplay`/`DirectPlay`), stray trailing whitespace, and mixed bullet styles.
+
 ## [v2.4.1] – 2026-05-14
 
 Documentation polish — no behavior changes, no script changes.
@@ -163,7 +181,8 @@ First SemVer release after the switch from the `vMAJOR.MINOR` scheme. Bugfix-onl
   - Prioritizes IPv4 over IPv6 via prefix policy `::ffff:0:0/96`.
   - Removes the `0.0.0.0/0` default route on ZT adapters so ZT doesn't capture internet traffic.
 
-[Unreleased]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.4.2...HEAD
+[v2.4.2]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.4.1...v2.4.2
 [v2.4.1]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.4.0...v2.4.1
 [v2.4.0]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.3.0...v2.4.0
 [v2.3.0]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.2.0...v2.3.0
