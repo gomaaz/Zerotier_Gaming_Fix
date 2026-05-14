@@ -103,7 +103,7 @@ echo.
 :: Display network adapter metrics
 echo ==============================================================
 echo [1] Network Adapter Metrics:
-echo Expected Output (Zerotier adapters should have lowest interfacemetric)
+echo Expected Output: ZT IPv4 metric=1 (priority), ZT IPv6 metric=20 (deprioritized)
 echo ==============================================================
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "& {Get-NetIPInterface | Select-Object InterfaceAlias, InterfaceIndex, AddressFamily, InterfaceMetric | Format-Table -AutoSize}"

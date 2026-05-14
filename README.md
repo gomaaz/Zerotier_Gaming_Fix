@@ -24,7 +24,7 @@ What that means for you:
 
 | Area | What the fix does |
 | --- | --- |
-| **Adapter metric** | Sets `InterfaceMetric = 1` on every ZeroTier adapter so games prefer ZT over LAN/Wi-Fi. |
+| **Adapter metric** | Sets `InterfaceMetric = 1` on the **IPv4** stack of every ZeroTier adapter so games prefer ZT over LAN/Wi-Fi. The **IPv6** stack is set to `20` instead — deliberately deprioritized so other adapters' IPv6 wins route selection (most LAN-game discovery and older netcode is IPv4-only; we don't want ZT's IPv6 fighting native IPv6). `AutomaticMetric` is disabled on both so Windows doesn't re-derive the value from link speed at every reconnect. |
 | **Firewall profile** | Sets the ZeroTier connection to **Private** and explicitly enables the **Network Discovery** and **File and Printer Sharing** rule groups. |
 | **Broadcast & multicast** | Adds persistent routes `255.255.255.255/32` and `224.0.0.0/4` on every ZeroTier adapter — needed by classic LAN broadcast, mDNS, SSDP, IGMP, and game server browsers. |
 | **IPv4 priority** | Adds Windows prefix policy `::ffff:0:0/96 100 4` so IPv4 outranks IPv6 *for dual-stack hostname resolution* (RFC 6724). Most LAN games don't speak IPv6. **Does not disable IPv6** and does not affect ZeroTier's own IPv6 transport — see FAQ below. |
@@ -143,7 +143,7 @@ Run `Check_Network_interfaces.bat` (in `resources\` after extraction, or `C:\zer
 | # | Section | What to look for |
 | --- | --- | --- |
 | 0 | DirectPlay status | `State: Enabled` |
-| 1 | Adapter metrics | ZeroTier adapters have the lowest `InterfaceMetric` (1) |
+| 1 | Adapter metrics | ZeroTier adapters: **IPv4 `InterfaceMetric=1`** (top priority), **IPv6 `InterfaceMetric=20`** (deprioritized) |
 | 2 | Network profiles | ZeroTier connections show `NetworkCategory: Private` |
 | 3 | IPv6 prefix policies | `::ffff:0:0/96` has precedence 100 (top of the table) |
 | 4 | IPv6 routes on ZT | No `::/0` default route on ZT adapters |

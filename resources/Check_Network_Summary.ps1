@@ -37,16 +37,21 @@ $ztIf = Get-NetIPInterface | Where-Object { $_.InterfaceAlias -like 'ZeroTier*' 
 $ztIfV4 = $ztIf | Where-Object { $_.AddressFamily -eq 'IPv4' }
 $hasZt = [bool]$ztIf
 
-# [1] Adapter metric on ZT
+# [1] Adapter metric on ZT — family-specific: IPv4=1 (top priority for
+# LAN gaming), IPv6=20 (deliberately deprioritized so other adapters'
+# IPv6 wins route selection — see ZeroTier_Fix.bat for rationale).
 if (-not $hasZt) {
     $results += New-Result 1 'ZT adapter metric' 'WARN' 'no ZeroTier adapters found'
 } else {
-    $badMetric = $ztIf | Where-Object { $_.InterfaceMetric -ne 1 }
+    $badMetric = $ztIf | Where-Object {
+        ($_.AddressFamily -eq 'IPv4' -and $_.InterfaceMetric -ne 1) -or
+        ($_.AddressFamily -eq 'IPv6' -and $_.InterfaceMetric -ne 20)
+    }
     if ($badMetric) {
         $detail = ($badMetric | ForEach-Object { "$($_.InterfaceAlias)($($_.AddressFamily))=$($_.InterfaceMetric)" } | Select-Object -Unique) -join ', '
-        $results += New-Result 1 'ZT adapter metric' 'FAIL' "expected 1 - got: $detail"
+        $results += New-Result 1 'ZT adapter metric' 'FAIL' "expected IPv4=1 IPv6=20 - got: $detail"
     } else {
-        $results += New-Result 1 'ZT adapter metric' 'OK' 'all ZT adapters InterfaceMetric=1'
+        $results += New-Result 1 'ZT adapter metric' 'OK' 'IPv4=1, IPv6=20 on all ZT adapters'
     }
 }
 

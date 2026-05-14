@@ -10,6 +10,15 @@ _Planned and in-progress changes will be listed here._
 
 ---
 
+## [v2.5.3] – 2026-05-14
+
+Single behavioral tweak on the per-reconnect fix: ZT-adapter IPv6 metric is no longer pinned to 1.
+
+### Changed
+- **ZeroTier-adapter IPv6 metric is no longer pinned to 1.** v2.5.2 set `InterfaceMetric=1` on both the IPv4 and IPv6 stack of every ZT adapter. That made IPv6 traffic also prefer ZT over native interfaces (Ethernet, Wi-Fi), which is the wrong default — most LAN-game discovery and older netcode is IPv4-only, and pushing ZT to the top for IPv6 just means it fights the host's real IPv6 path. The IPv4 stack still gets `InterfaceMetric=1` (so games pick ZT over LAN/Wi-Fi as before), but the **IPv6** stack is now set to `20` — low-priority, not "off". `AutomaticMetric=Disabled` remains on both. The summary check in `Check_Network_Summary.ps1` was updated to expect that pair; the README and `Check_Network_interfaces.bat` block `[1]` got the corresponding text update.
+
+---
+
 ## [v2.5.2] – 2026-05-14
 
 Big diagnostic and reliability release. Adds full project-wide logging to `run.log`, which immediately surfaced a silent, long-standing bug that left every per-reconnect setting unapplied. Also fixes Metric and NetworkCategory not sticking across reconnects, repairs the broken WinIPBroadcast download, makes the scheduled task report success correctly, and cleans up several Summary-table false alarms.

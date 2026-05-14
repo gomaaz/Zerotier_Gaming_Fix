@@ -73,12 +73,19 @@ if not exist "%BACKUP_FILE%" (
 echo [INFO] Prioritizing IPv4 over IPv6...
 netsh interface ipv6 set prefixpolicy ::ffff:0:0/96 100 4
 
-:: Set metric to 1 for all ZeroTier adapters. AutomaticMetric must be
+:: Set adapter metric for all ZeroTier adapters. AutomaticMetric must be
 :: disabled together with the manual metric value, otherwise Windows
 :: re-derives the metric from link speed on the next reconnect (~35 for
-:: a 1 Gbps virtual adapter) and our value of 1 is silently overwritten.
+:: a 1 Gbps virtual adapter) and our value is silently overwritten.
+::
+:: Family-specific values:
+::   IPv4 -> 1  (highest priority so LAN games prefer ZT over Ethernet/Wi-Fi)
+::   IPv6 -> 20 (deliberately deprioritized; we want other adapters' IPv6
+::               to win route selection over ZT's IPv6, since most LAN
+::               game-discovery and older title netcode is IPv4-only.
+::               20 is low-priority but not "off")
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "& {$idx=@(%ZT_IDX%); Get-NetIPInterface | Where-Object { $_.InterfaceIndex -in $idx } | ForEach-Object { Set-NetIPInterface -InterfaceIndex $_.InterfaceIndex -AddressFamily $_.AddressFamily -AutomaticMetric Disabled -InterfaceMetric 1 -ErrorAction SilentlyContinue } }"
+    "& {$idx=@(%ZT_IDX%); Get-NetIPInterface | Where-Object { $_.InterfaceIndex -in $idx } | ForEach-Object { $m = if ($_.AddressFamily -eq 'IPv6') { 20 } else { 1 }; Set-NetIPInterface -InterfaceIndex $_.InterfaceIndex -AddressFamily $_.AddressFamily -AutomaticMetric Disabled -InterfaceMetric $m -ErrorAction SilentlyContinue } }"
 
 :: Set all ZeroTier connection profiles to Private (firewall profile).
 :: Set-NetConnectionProfile writes the live category, but Windows' NLA
