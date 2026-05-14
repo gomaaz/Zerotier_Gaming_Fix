@@ -20,6 +20,23 @@ What that means for you:
 
 ---
 
+## ⚠️ Read this first: ZeroTier's free tier no longer allows the two managed routes this fix expects
+
+ZeroTier has tightened the limits on **custom managed routes** for free accounts. As of late 2025 / early 2026:
+
+- The **new web UI** at [my.zerotier.com](https://my.zerotier.com) shows the *Managed Routes* form fully greyed out with `Custom routes are unavailable at your current plan tier`.
+- The **old web UI** lets you add a single custom route, but the LAN route already counts against the cap, so you typically see `2 / 1 routes` and the *Add* button is disabled.
+
+This fix's *Enable broadcast/multicast on the ZeroTier side* step (further down) originally asked you to add **two** custom routes on the controller — `255.255.255.255/32` for broadcast and `224.0.0.0/4` for multicast. On a free account today, that's no longer fully possible. You have three realistic options:
+
+1. **Add only `255.255.255.255/32`** (broadcast) as your one allowed custom route. That covers classic LAN-broadcast game discovery (AoE II, classic C&C, most older multiplayer titles, Half-Life 1 mods, …). Multicast/mDNS/SSDP-style discovery used by some newer engines will still be broken, but a lot of LAN-gaming scenarios work with broadcast alone.
+2. **Self-host the controller with [ZTNET](https://ztnet.network/)** *(recommended once you outgrow option 1)*. ZTNET is a free, open-source ZeroTier controller you can run in a Docker container on a Raspberry Pi, NAS, or small VPS. It gives you **unlimited custom managed routes, unlimited devices, adjustable network-wide MTU, and a full dashboard** — using the same ZeroTier protocol and same peer-to-peer transport as `my.zerotier.com`, only the control plane moves to your own box. Every step of this README works against a ZTNET controller exactly the same way (open the network → *Advanced* → *Managed Routes* → add both routes).
+3. **Pay for a ZeroTier tier** that lifts the route limit.
+
+A note on why the controller route matters even though `ZeroTier_Fix.bat` adds local `255.255.255.255/32` routes on every Windows client: the local route tells *Windows* to send broadcast frames over the ZT adapter, but the **controller-side managed route is what tells the ZT virtual switch to actually forward those broadcasts across peers**. Without it, peers won't see each other's broadcasts no matter what each client's local routing table says.
+
+---
+
 ## ✅ What it fixes
 
 | Area | What the fix does |
@@ -84,6 +101,8 @@ For the fix to be effective, your ZeroTier network controller must actually forw
 2. Scroll to **Advanced** → **Managed Routes** → **Add Route**.
 3. Add `255.255.255.255/32` via `0.0.0.0` — enables broadcast.
 4. Add `224.0.0.0/4` via `0.0.0.0` — enables multicast (mDNS, SSDP, server browsers).
+
+> ⚠️ **Free-tier note:** Steps 3 and 4 require two custom managed routes; the current ZeroTier free tier only allows **one** (and the new web UI blocks custom routes entirely). See the *Read this first* section at the top of this README — short answer: add `255.255.255.255/32` only and you're fine for most classic LAN games, or switch to a self-hosted [ZTNET](https://ztnet.network/) controller for unlimited routes.
 
 If you self-host your own controller via [ZTNET](https://ztnet.network/), you can additionally tune the network-wide MTU from the dashboard (e.g. 1400 for gaming) and remove ZeroTier Central's device limits.
 

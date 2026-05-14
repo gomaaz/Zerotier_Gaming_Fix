@@ -10,6 +10,16 @@ _Planned and in-progress changes will be listed here._
 
 ---
 
+## [v2.5.5] – 2026-05-14
+
+README only — points new users at the ZeroTier free-tier route-cap restriction *before* they go and try to add managed routes that the UI refuses. No script change.
+
+### Changed
+- **README**: new prominent *"Read this first: ZeroTier's free tier no longer allows the two managed routes this fix expects"* section placed right under the vibe-coding heads-up (so it's visible above the *What it fixes* table). Explains the new-UI grey-out and the old-UI `2/1` quirk, then offers three concrete paths: (1) add only `255.255.255.255/32` and accept losing multicast/mDNS discovery, (2) self-host the controller with [ZTNET](https://ztnet.network/) for unlimited routes/devices, (3) pay. Also notes *why* the controller-side managed route matters in the first place — the local `route -p add` lines from `ZeroTier_Fix.bat` only tell Windows to push the broadcast to the ZT adapter; the controller's managed-route entry is what actually makes the ZeroTier virtual switch forward those broadcast frames across peers. Triggered by a question on Reddit from a free-tier user who hit the wall on step 3 of the original setup guide.
+- **README** *"Enable broadcast/multicast on the ZeroTier side"* now carries an inline note pointing back to the new top-level section, so the constraint is restated where the user is about to click.
+
+---
+
 ## [v2.5.4] – 2026-05-14
 
 README synced with the current behavior. No script changes, no installer behavior change — re-running the installer is optional and only refreshes `version.txt`.
