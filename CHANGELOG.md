@@ -6,7 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-_Planned and in-progress changes will be listed here._
+### Added
+- **`Check_Network_interfaces.bat` now ends with a compact pass/fail summary table.** A new helper script `resources/Check_Network_Summary.ps1` evaluates each of the diagnostic blocks (DirectPlay, ZT adapter metric, network category, IPv6 prefix policy, default-route cleanup on IPv4/IPv6, persistent broadcast route, scheduled-task `LastTaskResult`, optional WinIPBroadcast service) and prints a single `# | Section | Status | Details` table with overall `OK=/WARN=/FAIL=` counts. The user no longer has to scroll back through eight raw sections to know whether the fix is delivering — the verdict is on the screen right before the `pause`. Raw per-block output is unchanged.
+
+### Fixed
+- **`Check_Network_interfaces.bat` window closed immediately on exit on some setups.** After a `powershell.exe -File ...` call the Windows console-input buffer can hold a stray key event, which makes the subsequent `pause` return instantly and the window auto-close before the user has a chance to read the summary. The script now uses a hardened end-of-run wait (double `pause >nul`: the first absorbs any buffer leftover from PowerShell, the second blocks on a real keypress) together with an explicit "Druecken Sie eine beliebige Taste"-banner.
 
 ---
 

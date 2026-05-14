@@ -160,9 +160,28 @@ if errorlevel 1 (
 echo.
 echo.
 echo ==============================================================
-echo [DONE] Please check the values above.
+echo [DONE] Raw output above. Compact summary below.
 echo ==============================================================
+
+:: Compact pass/fail summary so the user does not have to scroll back
+:: through every section to know if the fix is delivering. Mirrors the
+:: "Verifying the fix" table in the README.
+set "SUMMARY_PS1=%~dp0Check_Network_Summary.ps1"
+if exist "%SUMMARY_PS1%" (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%SUMMARY_PS1%"
+) else (
+    echo [WARN] Summary script not found next to this .bat:
+    echo        %SUMMARY_PS1%
+    echo        Re-run the installer to refresh C:\zerotier_fix\.
+)
+
 echo.
-echo.
-echo.
-pause
+echo ==============================================================
+echo Druecken Sie eine beliebige Taste, um das Fenster zu schliessen.
+echo ==============================================================
+:: Doppelter Pause-Wait ist Absicht: nach powershell.exe kann der
+:: Console-Input-Buffer "Reste" enthalten, sodass ein einzelnes
+:: pause sofort zurueckkehrt und das Fenster zu schnell schliesst.
+:: Erstes pause konsumiert den Buffer, zweites wartet auf den User.
+pause >nul
+pause >nul
