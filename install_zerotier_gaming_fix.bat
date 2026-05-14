@@ -1,17 +1,30 @@
 @echo off
 cls
+
+:: Version of this installer. Keep in sync with CHANGELOG.md and the git tag.
+set ZGF_VERSION=2.3.0
+
 echo.
 echo.
-echo  8888P                   w   w               .d88b                 w                d8b w       
-echo   dP  .d88b 8d8b .d8b. w8ww w .d88b 8d8b    8P www .d88 8d8b.d8b. w 8d8b. .d88     8'  w Yb dP 
-echo  dP   8.dP' 8P   8' .8  8   8 8.dP' 8P      8b  d8 8  8 8P Y8P Y8 8 8P Y8 8  8    w8ww 8  `8.  
-echo d8888 `Y88P 8    `Y8P'  Y8P 8 `Y88P 8       `Y88P' `Y88 8   8   8 8 8   8 `Y88     8   8 dP Yb 
+echo  8888P                   w   w               .d88b                 w                d8b w
+echo   dP  .d88b 8d8b .d8b. w8ww w .d88b 8d8b    8P www .d88 8d8b.d8b. w 8d8b. .d88     8'  w Yb dP
+echo  dP   8.dP' 8P   8' .8  8   8 8.dP' 8P      8b  d8 8  8 8P Y8P Y8 8 8P Y8 8  8    w8ww 8  `8.
+echo d8888 `Y88P 8    `Y8P'  Y8P 8 `Y88P 8       `Y88P' `Y88 8   8   8 8 8   8 `Y88     8   8 dP Yb
 echo                                                                           wwdP
+echo                                                       v%ZGF_VERSION%
 echo.
-echo.  
+echo.
 
 
-echo [INFO] Installing ZeroTier Auto-Fix...
+echo [INFO] Installing ZeroTier Auto-Fix v%ZGF_VERSION%...
+:: Detect a prior installation and report its version, so re-running the
+:: installer as an updater is transparent.
+if exist "C:\zerotier_fix\version.txt" (
+    for /f "delims=" %%V in (C:\zerotier_fix\version.txt) do set PREV_VERSION=%%V
+    echo [INFO] Previous installation detected: v%PREV_VERSION%
+) else if exist "C:\zerotier_fix\ZeroTier_Fix.bat" (
+    echo [INFO] Previous installation detected ^(version unknown, pre-v2.3.0^)
+)
 
 :: Check for administrator privileges
 net session >nul 2>&1
@@ -69,6 +82,9 @@ echo.
 echo.
 xcopy "%SOURCE_DIR%\*" "%TARGET_DIR%" /Y /E
 xcopy "%SOURCE_DIR%\..\uninstall_zerotier_gaming_fix.bat" "%TARGET_DIR%" /Y
+
+:: Write the installed version so future re-runs / diagnostics know what's there.
+echo %ZGF_VERSION%> "%TARGET_DIR%\version.txt"
 
 
 echo.

@@ -69,11 +69,39 @@ echo.
 schtasks /delete /tn "ZeroTier Auto Fix" /f >nul 2>&1
 schtasks /delete /tn "ZeroTier_PrioritizeIPv6" /f >nul 2>&1
 
-:: Small delay to ensure the task is removed
+:: Small delay to ensure the task is removed (so it cannot re-add the
+:: routes we are about to clean up).
 timeout /t 2 /nobreak >nul
 
-:: Remove read-only and hidden attributes
+echo.
+echo ==============================================================
+echo [INFO] Removing persistent LAN-discovery routes from ZT adapters...
+echo ==============================================================
+echo.
+:: Drop the broadcast and multicast routes the install added on every ZT
+:: adapter. If ZeroTier itself has already been uninstalled the adapters
+:: are gone and the loop matches nothing - safe no-op.
+for /f "tokens=1" %%A in ('powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "& {Get-NetIPInterface | Where-Object { $_.InterfaceAlias -like 'ZeroTier*' } | Select-Object -ExpandProperty InterfaceIndex -Unique}"') do (
+    echo [INFO] Removing broadcast/multicast routes on ZT Interface Index %%A...
+    route delete 255.255.255.255 mask 255.255.255.255 if %%A >nul 2>&1
+    route delete 224.0.0.0       mask 240.0.0.0       if %%A >nul 2>&1
+)
+
+echo.
+echo ==============================================================
+echo [INFO] Restoring ZeroTier local.conf...
+echo ==============================================================
+echo.
+:: Restore the most recent local.conf.bak.* the installer wrote, or - if
+:: there is no backup - just delete the local.conf we wrote (it only
+:: contains multi-core settings that have no effect on Windows anyway).
+powershell -NoProfile -Command "$dir = Join-Path $env:ProgramData 'ZeroTier\One'; $conf = Join-Path $dir 'local.conf'; if (Test-Path $dir) { $bak = Get-ChildItem -Path $dir -Filter 'local.conf.bak.*' -ErrorAction SilentlyContinue | Sort-Object Name -Descending | Select-Object -First 1; if ($bak) { Copy-Item $bak.FullName $conf -Force; Write-Host ('[INFO] Restored local.conf from ' + $bak.Name) } elseif (Test-Path $conf) { Remove-Item $conf -Force -ErrorAction SilentlyContinue; Write-Host '[INFO] No backup found - deleted our local.conf (multi-core settings only).' } else { Write-Host '[INFO] No local.conf to clean up.' } }"
+
+echo.
+echo ==============================================================
 echo [INFO] Removing read-only attributes...
+echo ==============================================================
 attrib -r -s -h C:\zerotier_fix\* /S /D >nul 2>&1
 
 echo.

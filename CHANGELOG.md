@@ -10,6 +10,28 @@ _Planned and in-progress changes will be listed here._
 
 ---
 
+## [v2.3.0] – 2026-05-14
+
+Robustness, security, and operator-visibility improvements. No user-facing flow changes — re-running the installer drops the new scripts in place.
+
+### Added
+- **Installer reports its version and writes `C:\zerotier_fix\version.txt`.** Detects a prior installation and prints its version (or "pre-v2.3.0" if no version file exists), so re-running the installer as an updater is transparent.
+- **`Check_Network_interfaces.bat` now also shows the scheduled-task status** (`LastRunTime`, `LastTaskResult`, `NextRunTime`) and tails the last six lines of `C:\zerotier_fix\run.log`, so problems with the per-reconnect fix can be diagnosed without leaving the diagnostic script.
+- **Uninstaller cleans up state the previous versions left behind:** persistent broadcast (`255.255.255.255/32`) and multicast (`224.0.0.0/4`) routes on every ZT adapter are removed, and `%ProgramData%\ZeroTier\One\local.conf` is either restored from the most recent installer-written `local.conf.bak.*` or deleted if there was no backup.
+
+### Changed
+- **`ZeroTier_Fix.bat` detects ZeroTier adapters once and reuses the index list across all blocks.** Adapter detection now matches `InterfaceDescription` (vendor-set, stable) as well as the previously-used `InterfaceAlias` (user-renameable), so renamed adapters are no longer ignored. The script exits cleanly with a warning if no ZT adapters are present.
+- **IPv6 prefix-policy backup no longer captures an already-modified state.** Skip the backup if the marker policy (`::ffff:0:0/96` with precedence 100) is already present, since that means the fix has run before.
+- **`update_zerotier_mtu.ps1` rewritten:** input validation for network ID (16-hex) and MTU range (68..9000), `TimeoutSec`, structured error output with HTTP status codes.
+
+### Security
+- **`update_zerotier_mtu.ps1` reads the API token as a `SecureString`** and clears it from memory after the API call instead of holding it in plain text.
+- **Auth header now uses ZeroTier's documented `Authorization: token <token>` scheme** instead of the previous lowercase `bearer` variant.
+- **MTU update sends a PATCH-style `{config:{mtu:N}}` body** instead of round-tripping the entire network config object. Eliminates the risk of accidentally overwriting read-only fields and the race window where a concurrent change could be clobbered.
+
+### Fixed
+- **`Check_Network_interfaces.bat` now uses the absolute path to `zerotier-cli`** (`%ProgramFiles%\ZeroTier\One\zerotier-cli.bat`) with a `where`-based fallback. The previous bare `zerotier-cli` invocation failed under SYSTEM context or when `PATH` had not been refreshed after a ZeroTier upgrade.
+
 ## [v2.2.0] – 2026-05-14
 
 Discovery boost, honesty about Windows multi-core support, hardened installer, and per-reconnect logging.
@@ -120,7 +142,8 @@ First SemVer release after the switch from the `vMAJOR.MINOR` scheme. Bugfix-onl
   - Prioritizes IPv4 over IPv6 via prefix policy `::ffff:0:0/96`.
   - Removes the `0.0.0.0/0` default route on ZT adapters so ZT doesn't capture internet traffic.
 
-[Unreleased]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.3.0...HEAD
+[v2.3.0]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.2.0...v2.3.0
 [v2.2.0]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.1.1...v2.2.0
 [v2.1.1]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.1...v2.1.1
 [v2.1]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.0...v2.1

@@ -18,14 +18,25 @@ if %errorLevel% neq 0 (
     exit /b
 )
 
+:: Locate zerotier-cli via absolute path - relying on PATH is fragile and
+:: under the SYSTEM context PATH may not include ZeroTier at all.
+set "ZTCLI=%ProgramFiles%\ZeroTier\One\zerotier-cli.bat"
+if not exist "%ZTCLI%" (
+    where zerotier-cli >nul 2>&1
+    if errorlevel 1 (
+        echo [ERROR] zerotier-cli not found.
+        echo Expected at: %ProgramFiles%\ZeroTier\One\zerotier-cli.bat
+        echo Is ZeroTier One installed?
+        pause
+        exit /b
+    )
+    set "ZTCLI=zerotier-cli"
+)
 
 echo ==============================================================
 echo [INFO] Checking ZeroTier Peer Connections...
 echo ==============================================================
-
-:: Run zerotier-cli peers and display output
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "& {Start-Process -NoNewWindow -FilePath 'cmd.exe' -ArgumentList '/c zerotier-cli peers' -Wait}"
+call "%ZTCLI%" peers
 
 echo.
 echo.
@@ -110,6 +121,28 @@ echo Expected Output: no 0.0.0.0/0 if internet routing is disabled
 echo ==============================================================
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "& {Get-NetRoute -AddressFamily IPv4 | Where-Object { $_.InterfaceAlias -like 'ZeroTier*' } | Sort-Object RouteMetric | Format-Table -AutoSize}"
+
+echo.
+echo.
+echo ==============================================================
+echo [6] Scheduled task status
+echo Expected output: Task is registered; Result=0 after a recent reconnect
+echo (Result=267011 / 0x41303 means "task not yet run", which is normal
+echo right after a fresh install before any network event has fired.)
+echo ==============================================================
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "& {Get-ScheduledTask -TaskName 'ZeroTier Auto Fix' -ErrorAction SilentlyContinue | Get-ScheduledTaskInfo | Format-List TaskName, LastRunTime, LastTaskResult, NextRunTime}"
+
+echo.
+echo ==============================================================
+echo [7] Last entries from C:\zerotier_fix\run.log (if present)
+echo ==============================================================
+if exist "C:\zerotier_fix\run.log" (
+    powershell -NoProfile -Command "Get-Content 'C:\zerotier_fix\run.log' -Tail 6"
+) else (
+    echo [INFO] No run.log yet - either the task has not fired since the
+    echo        v2.2.0+ install, or this is a pre-v2.2.0 setup.
+)
 
 echo.
 echo.

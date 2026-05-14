@@ -1,76 +1,93 @@
-# 1. Ask the user for API token
-Write-Host "This script uses the ZeroTier API to change the MTU settings for a specific network."
-Write-Host "In order to authenticate and update network parameters (such as MTU), you need your API token."
-Write-Host "You can find or create your API token by logging into the ZeroTier Dashboard (my.zerotier.com),"
-Write-Host "navigating to account settings -> API Access Tokens -> New Token -> Copy the token and pase it here"
+# Change the MTU of a ZeroTier Central-managed network.
+#
+# Requires you to be the network admin and to have an API token from
+# my.zerotier.com -> Account -> API Access Tokens.
+#
+# Sends a PATCH-style update (only the MTU field), uses the documented
+# "Authorization: token <token>" scheme, and reads the token as a
+# SecureString so it does not sit in plain text on the command line.
+
+$ErrorActionPreference = 'Stop'
+
+Write-Host "ZeroTier Central - per-network MTU update"
+Write-Host "-----------------------------------------"
+Write-Host ""
+Write-Host "You need:"
+Write-Host "  * an API token (my.zerotier.com -> Account -> API Access Tokens)"
+Write-Host "  * the 16-hex network ID"
+Write-Host "  * admin rights on that network"
 Write-Host ""
 
-$token = Read-Host -Prompt "Please enter your API token"
-Write-Host ""
-Write-Host ""
-# 2. Ask the user for network ID
-Write-Host "Enter your vali ZeroTier network ID to apply the MTU settings."
-Write-Host "You can find your network ID in the ZeroTier Dashboard (my.zerotier.com) under"
-Write-Host "the 'Networks' section. Each network you create has a unique 16-character ID."
-Write-Host ""
-$network_id = Read-Host -Prompt "Please enter your network ID"
-Write-Host ""
-Write-Host ""
+# Read the token as SecureString so it is not echoed and is easier to clear.
+$secureToken = Read-Host -Prompt "API token" -AsSecureString
+$bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureToken)
+try {
+    $token = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
+} finally {
+    [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+}
+if ([string]::IsNullOrWhiteSpace($token)) {
+    Write-Host "[ERROR] No token entered. Aborting."
+    exit 1
+}
 
-# 3. Ask the user for desired MTU size
-Write-Host "ZeroTier's default MTU is 2800, which is generally well suited for file transfers."
-Write-Host "For gaming, many users prefer a lower MTU such as 1400 or even below,"
-Write-Host "to potentially reduce latency and avoid large packet fragmentation."
 Write-Host ""
+$network_id = Read-Host -Prompt "Network ID (16 hex chars)"
+if ($network_id -notmatch '^[0-9a-fA-F]{16}$') {
+    Write-Host "[ERROR] Network ID '$network_id' does not look like 16 hex chars. Aborting."
+    exit 1
+}
 
-$mtu = Read-Host -Prompt "Please enter the desired MTU size"
+Write-Host ""
+Write-Host "ZeroTier's default MTU is 2800. For gaming, 1400 or lower is common."
+$mtuRaw = Read-Host -Prompt "Desired MTU (integer)"
+$mtuParsed = 0
+if (-not [int]::TryParse($mtuRaw, [ref]$mtuParsed)) {
+    Write-Host "[ERROR] MTU must be an integer. Aborting."
+    exit 1
+}
+if ($mtuParsed -lt 68 -or $mtuParsed -gt 9000) {
+    Write-Host "[ERROR] MTU $mtuParsed out of plausible range (68..9000). Aborting."
+    exit 1
+}
+$mtu = $mtuParsed
 
-# 4. Set up HTTP headers
+# Documented ZeroTier auth scheme.
 $headers = @{
-    Authorization = "bearer $token"
-    "Content-Type" = "application/json"
+    Authorization  = "token $token"
+    'Content-Type' = 'application/json'
 }
 
-# 5. Retrieve the current network configuration
+# PATCH-style: send only the field we want to change. ZeroTier Central
+# merges the partial config server-side, so we don't risk overwriting
+# read-only fields by round-tripping the full document.
+$body = @{ config = @{ mtu = $mtu } } | ConvertTo-Json -Depth 5 -Compress
+$uri  = "https://api.zerotier.com/api/v1/network/$network_id"
+
 try {
-    $network_config = Invoke-RestMethod -Uri "https://api.zerotier.com/api/v1/network/$network_id" `
-                                        -Method Get `
-                                        -Headers $headers
-}
-catch {
-    Write-Host "Error retrieving network data: $($_.Exception.Message)"
+    Invoke-RestMethod -Uri $uri -Method Post -Headers $headers -Body $body -TimeoutSec 30 | Out-Null
+    Write-Host ""
+    Write-Host "[OK] MTU set to $mtu on network $network_id."
+    Write-Host ""
+    Write-Host "Note: the ZeroTier dashboard may still show the old MTU (2800) -"
+    Write-Host "that is a documented visual bug. Verify with:"
+    Write-Host "    ping <peer-zt-ip> -l $($mtu + 100) -f"
+    Write-Host "which should report 'Packet needs to be fragmented' once the new"
+    Write-Host "MTU is in effect."
+} catch {
+    $status = $null
+    if ($_.Exception.Response) { $status = $_.Exception.Response.StatusCode.value__ }
+    Write-Host ""
+    if ($status) {
+        Write-Host "[ERROR] Update failed (HTTP $status): $($_.Exception.Message)"
+    } else {
+        Write-Host "[ERROR] Update failed: $($_.Exception.Message)"
+    }
     exit 1
+} finally {
+    Remove-Variable token -ErrorAction SilentlyContinue
 }
 
-# 6. Check if data was retrieved successfully
-if ($network_config -eq $null) {
-    Write-Host "Error: No network data received!"
-    exit 1
-}
-
-# 7. Change the MTU value
-# Convert the user input to an integer for safety
-$network_config.config.mtu = [int]$mtu
-
-# 8. Convert the configuration back to JSON
-$body = $network_config | ConvertTo-Json -Depth 10 -Compress
-
-# 9. Send the updated configuration
-try {
-    Invoke-RestMethod -Uri "https://api.zerotier.com/api/v1/network/$network_id" `
-                      -Method Post `
-                      -Headers $headers `
-                      -Body $body
-
-    Write-Host "MTU successfully set to $mtu!"
-    Write-Host "Note: If Windows is still showing MTU 2800, this is a visual bug!"
-}
-catch {
-    Write-Host "Error while sending the updated configuration: $($_.Exception.Message)"
-    exit 1
-}
-Write-Host ""
-# 10. (Optional) Pause to prevent the console from closing immediately
 Write-Host ""
 Write-Host "Press any key to continue..."
-[System.Console]::ReadKey() | Out-Null
+[System.Console]::ReadKey($true) | Out-Null
