@@ -10,6 +10,18 @@ _Planned and in-progress changes will be listed here._
 
 ---
 
+## [v2.4.1] – 2026-05-14
+
+Documentation polish — no behavior changes, no script changes.
+
+### Changed
+- README features list rewritten to reflect what v2.4.0 actually does (multicast route, firewall rule groups, IPv4 prefix priority, optional WinIPBroadcast).
+- New **Tested with** section names Windows 10/11 as the supported targets and ZeroTier 1.16.1 as the reference version. Mentions that the staged multi-core `local.conf` is forward-compatible but currently inert on Windows (Linux/FreeBSD-only upstream), plus 1.16 specifics: `encryptedHelloEnabled` flag and Network-Specific Relays.
+- Troubleshooting section: WinIPBroadcast hint now points at the installer's optional step instead of a manual download.
+
+### Fixed
+- Several README typos and stray markdown artifacts (`doesnt` → `doesn't`, stray `(!)` punctuation, broken bold formatting around "prioritize IPv4").
+
 ## [v2.4.0] – 2026-05-14
 
 Optional WinIPBroadcast integration — fills the LAN-discovery gap for legacy DirectPlay-based games (Age of Empires II, classic Command and Conquer, Quake-derived titles, Half-Life 1 mods, …) that Windows' own broadcast handling does not forward properly over virtual adapters. Re-running the installer is enough to opt in; v2.3.0 setups are unaffected if the prompt is declined.
@@ -151,7 +163,8 @@ First SemVer release after the switch from the `vMAJOR.MINOR` scheme. Bugfix-onl
   - Prioritizes IPv4 over IPv6 via prefix policy `::ffff:0:0/96`.
   - Removes the `0.0.0.0/0` default route on ZT adapters so ZT doesn't capture internet traffic.
 
-[Unreleased]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.4.1...HEAD
+[v2.4.1]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.4.0...v2.4.1
 [v2.4.0]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.3.0...v2.4.0
 [v2.3.0]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.2.0...v2.3.0
 [v2.2.0]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.1.1...v2.2.0

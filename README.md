@@ -1,18 +1,32 @@
 # 🎮 ZeroTier Gaming Fix
 **Automatically fixes ZeroTier network settings for seamless LAN gaming with zero coding knowledge!**  
 
-When using **ZeroTier for LAN gaming**, some users experience issues where players **cannot see each other in-game**. This happens because **Windows resets network settings(!)** upon reconnecting, affecting:  
-✅ **Network adapter metrics**  
-✅ **Firewall profile (public/private)**  
-✅ **Broadcast traffic for game discovery** 
-✅ **optional: Set MTU Size for the whole network (for network admins)**  
+When using **ZeroTier for LAN gaming**, some users experience issues where players **cannot see each other in-game**. This happens because **Windows resets network settings** upon reconnecting, affecting:
+
+✅ **Network adapter metrics** — ZeroTier prioritized over local network adapters
+✅ **Firewall profile** — set to Private + the *Network Discovery* and *File and Printer Sharing* rule groups explicitly enabled
+✅ **Broadcast and multicast traffic** — `255.255.255.255/32` and `224.0.0.0/4` routes on every ZeroTier adapter for game discovery, mDNS, SSDP, and server browsers
+✅ **IPv4 prioritized over IPv6** — for games that don't support IPv6
+✅ *(optional)* **WinIPBroadcast service** — legacy DirectPlay-era games (Age of Empires II, classic C&C, Half-Life mods, …)
+✅ *(optional)* **Per-network MTU change** — via the ZeroTier Central API (network admins only)
 
 This tool ensures that **ZeroTier works flawlessly for LAN gaming**, even after reconnections.
 
 ---
 
+## 🧩 Tested with
+
+- **Windows 10 and Windows 11.** Windows-only by design (uses Windows-specific cmdlets and the Task Scheduler event-trigger mechanism).
+- **ZeroTier 1.16.1** as the current reference. The fix is compatible with all ZeroTier 1.14+ versions.
+- **ZeroTier 1.16 specifics:**
+  - The multi-core `local.conf` the installer stages is **forward-compatible** but currently inert on Windows — ZeroTier's multi-core packet I/O is implemented only for Linux and FreeBSD as of 1.16.1 (see [ZeroTier multithreading docs](https://docs.zerotier.com/multithreading/)). The setting takes effect automatically once the Windows port lands.
+  - The new `encryptedHelloEnabled` flag is available in `local.conf` if you want HELLO-packet encryption (add it manually).
+  - The 1.16 *Network-Specific Relays* feature can help if your peers struggle with NAT traversal — configure it on the ZeroTier Central side, no client-side change needed.
+
+---
+
 ## 🚀 Why is this needed?
-Many games rely on **LAN discovery via broadcast packets**. Windows often **resets key network settings(!)** when reconnecting to ZeroTier, which prevents proper LAN discovery.  
+Many games rely on **LAN discovery via broadcast packets**. Windows often **resets key network settings** when reconnecting to ZeroTier, which prevents proper LAN discovery.
 This fix:
 - Ensures **LAN broadcast works**, so game lobbies are always visible.
 - Forces **ZeroTier as the top-priority network adapter**.
@@ -44,7 +58,7 @@ You can just run the installer again.
    - Copy necessary files to `C:\zerotier_fix`
    - Install an **automated scheduled task**, triggered by a zerotier network (re-)connect
    - Apply the **correct network setting**s for those interfaces
-   - Set IPv6 prefix policies to** prioritize IPv4 **over IPv6 as a workaround, since IPv6 cannot be disabled via shell commands for ZeroTier adapters.
+   - Set IPv6 prefix policies to **prioritize IPv4** over IPv6 as a workaround, since IPv6 cannot be disabled via shell commands for ZeroTier adapters.
    - activate the legacycomponent of windows **"Directplay"**, since it's needed for some [older games](https://gitlab.winehq.org/wine/wine/-/wikis/DirectPlay-Games)
    - activate multithreading for zerotier, since by default there is only one cpu core used.
    - (optional) Set **MTU Size for the whole network**, if you are network admin. For gaming, many users prefer a lower MTU such as 1400 or even below, to potentially reduce latency and avoid large packet fragmentation. This change is an on-the-fly change and doesn't need the clients to reconnect for its activation, it's active right away! NOTE: After change Zerotier will propably **still show an MTU of its default value 2800**, but the size has changed to your preferred value (It's a visual bug). You can check this if you ping your ZT Opponent with `ping <ZT-Opponent-IP> -l 1500 -f`. If you have set 1400 it will "unknown error" or "need to be fragmented" as this will tell you: more than 1400 is not allowed. Games typically rely on the system’s network stack (OS-level) to handle MTU constraints. If the system MTU is set to, for example, 1400, many games will automatically adopt or respect that limit. Some games, however, specify their own packet sizes independently, so they may not be directly influenced by the system MTU setting. Keep in mind, that a low MTU Size is not recommended for large file transfers.
@@ -102,8 +116,8 @@ Expected outputs are written down, for every block.
 - is a `DIRECT` connection to each peer working? Check with `Check_Network_interfaces.bat` in resources folder. (Run as administrator)
 - If your firewall is **blocking LAN traffic**, manually check the **Windows Defender settings**.
 - If LAN discovery still doesn’t work, verify that **Multicast & Broadcast are enabled in ZeroTier Central**.
-- If Discovery still doesnt work, you can have a look at [Winipbroadcast-1.6](https://github.com/dechamps/WinIPBroadcast/releases/tag/winipbroadcast-1.6)
-- If Discovery still doesnt work, you can install [Npcap](https://npcap.com/). Npcap enables raw packet capturing, allowing these games to detect LAN sessions over ZeroTier, Hamachi, or OpenVPN. 
+- If discovery still doesn't work, the installer can register [WinIPBroadcast 1.6](https://github.com/dechamps/WinIPBroadcast/releases/tag/winipbroadcast-1.6) as a service for you (optional step at the end of `install_zerotier_gaming_fix.bat`, from v2.4.0 on). You can also install it manually and skip the prompt.
+- If discovery still doesn't work, you can install [Npcap](https://npcap.com/). Npcap enables raw packet capturing, allowing these games to detect LAN sessions over ZeroTier, Hamachi, or OpenVPN.
 - Consider running a own Zerotier controller with [ZTNET](https://ztnet.network/) since you can adjust MTU Sizes in the dashboard (1400 eg.) for gaming optimization and have unlimited Devices.
 
 ---
