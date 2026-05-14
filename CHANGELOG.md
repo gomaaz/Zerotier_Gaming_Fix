@@ -12,18 +12,22 @@ _Planned and in-progress changes will be listed here._
 
 ## [v2.4.2] – 2026-05-14
 
-Documentation overhaul — no functional change to scripts.
+Documentation overhaul — no functional change to scripts. Also clarifies what "prioritizes IPv4 over IPv6" actually means (and does not mean), in response to issue [#2](https://github.com/gomaaz/Zerotier_Gaming_Fix/issues/2).
+
+### Added
+- **New FAQ entry "Does this disable IPv6 (or block ZeroTier from using IPv6)?"** in the README. Walks through what the `::ffff:0:0/96 100 4` prefix policy actually does (RFC 6724 host-side destination-address selection between A and AAAA records for dual-stack hostnames) versus what stays untouched (ZeroTier's UDP underlay over IPv6, the IPv6 stack itself, AAAA-only destinations). Direct response to [#2](https://github.com/gomaaz/Zerotier_Gaming_Fix/issues/2).
 
 ### Changed
 - **README restructured end-to-end** to match the actual v2.4.x install behavior. New section flow: *What it fixes → Requirements → Installation → ZeroTier-side setup → Optional MTU → Updating → Uninstalling → Verifying → How it works → Troubleshooting → Linux/macOS peers → Q&A → Disclaimer.*
 - **"What it fixes"** is now a two-column reference table (adapter metric, firewall profile, broadcast/multicast routes, IPv4 priority, DirectPlay, default-route cleanup, optional WinIPBroadcast, optional MTU). Replaces two duplicated feature lists from earlier versions.
+- **IPv4-priority row in the *What it fixes* table** now names the mechanism (Windows prefix policy / RFC 6724) and explicitly states the fix does **not** disable IPv6 and does not affect ZeroTier's IPv6 underlay.
 - **Installation section** now accurately lists every step the installer performs in v2.4.x: `version.txt`, `local.conf` backup, the WinIPBroadcast prompt, the MTU prompt, the scheduled task being run once at the end.
 - **Uninstall section** now accurately lists every cleanup step: persistent-route deletion on every ZT adapter, `local.conf` restore from the most recent backup (or deletion), WinIPBroadcast service removal, scheduled-task removal, IPv6 prefix-policy restoration, DirectPlay disable.
 - **"How it works" section** documents the Task Scheduler trigger (Network-Profile Event ID 10000), the SYSTEM-context execution, and the `run.log` per-reconnect trail.
 - **"Verifying the fix" section** lists all eight diagnostic blocks of `Check_Network_interfaces.bat` (`[0]` DirectPlay … `[8]` WinIPBroadcast service status) with the expected output per block.
 - **Optional MTU change** is now its own section with a verification ping example, rather than a single long paragraph buried inside Installation.
 - **Multi-core / ZeroTier 1.16 note** is in its own subsection under Requirements, clearly stating that the staged setting is forward-compatible but inert on Windows today.
-- Installer bumped to `ZGF_VERSION=2.4.2` so the installed `version.txt` matches the tag for users who download this release.
+- Installer bumped to `ZGF_VERSION=2.4.2` so the installed `version.txt` matches the tag for users who download this release. (The constant was left at `2.4.0` through v2.4.1 by mistake.)
 
 ### Fixed
 - Numerous README typos, broken bold markers, inconsistent capitalization (`windows`/`Windows`, `ipv4`/`IPv4`, `Directplay`/`DirectPlay`), stray trailing whitespace, and mixed bullet styles.
