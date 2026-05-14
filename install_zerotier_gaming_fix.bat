@@ -45,12 +45,14 @@ echo [INFO] Enabling DirectPlay (Legacy Component)...
 echo ==============================================================
 echo.
 echo.
-REM Call PowerShell to check if DirectPlay is enabled
-powershell -Command "$state = Get-WindowsOptionalFeature -Online -FeatureName DirectPlay | Select-Object -ExpandProperty State; if ($state -eq 'Disabled') { exit 1 } else { exit 0 }"
+REM Call PowerShell to check if DirectPlay is in any non-Enabled state.
+REM Covers 'Disabled' and 'DisabledWithPayloadRemoved' (the latter occurred
+REM after a prior dism /remove-feature and was missed by older versions).
+powershell -Command "$state = Get-WindowsOptionalFeature -Online -FeatureName DirectPlay | Select-Object -ExpandProperty State; if ($state -ne 'Enabled') { exit 1 } else { exit 0 }"
 
 REM Check the result of PowerShell command
 if %errorlevel% neq 0 (
-    echo [INFO] DirectPlay is not enabled. Scheduling installation...
+    echo [INFO] DirectPlay is not enabled. Enabling now...
     powershell -Command "Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All"
     echo.
     echo [DONE] DirectPlay has been enabled!
@@ -73,9 +75,15 @@ echo.
 echo.
 echo.
 echo ==============================================================
-echo [INFO] Enabling ZeroTier Multithreading...
+echo [INFO] Pre-staging ZeroTier multi-core config (local.conf)...
 echo ==============================================================
 echo.
+echo NOTE: As of ZeroTier 1.16.1, multi-core packet I/O is implemented
+echo       only for Linux and FreeBSD. The Windows port is still pending
+echo       upstream (see https://docs.zerotier.com/multithreading/).
+echo       The local.conf written below is forward-compatible: once
+echo       ZeroTier ships Windows multi-core support, the settings take
+echo       effect automatically on the next service start.
 echo.
 
 :: Get number of logical cores via PowerShell
@@ -85,6 +93,10 @@ for /f %%A in ('powershell -Command "(Get-CimInstance Win32_Processor).NumberOfL
 if not exist "%ProgramData%\ZeroTier\One" (
     mkdir "%ProgramData%\ZeroTier\One"
 )
+
+:: Back up existing local.conf with a timestamped name before overwriting,
+:: so user-defined settings (port, bind, custom roots, ...) can be restored.
+powershell -NoProfile -Command "$conf = Join-Path $env:ProgramData 'ZeroTier\One\local.conf'; if (Test-Path $conf) { $ts = Get-Date -Format 'yyyyMMdd-HHmmss'; Copy-Item $conf ($conf + '.bak.' + $ts) -Force; Write-Host ('[INFO] Existing local.conf backed up to local.conf.bak.' + $ts) } else { Write-Host '[INFO] No existing local.conf to back up.' }"
 
 :: Generate local.conf with dynamic core count
 (
@@ -98,21 +110,13 @@ if not exist "%ProgramData%\ZeroTier\One" (
     echo }
 ) > "%ProgramData%\ZeroTier\One\local.conf"
 
-:: Restart ZeroTier service to apply changes
-echo stop Zerotier Service
-net stop ZeroTierOneService >nul 2>&1
-echo start Zerotier Service
-net start ZeroTierOneService >nul 2>&1
-timeout /t 3 /nobreak >nul
+echo [INFO] Wrote %ProgramData%\ZeroTier\One\local.conf (concurrency=%CORES%).
 echo.
-:: Verify multithreading status
-echo ==============================================================
-echo [INFO] Verifying ZeroTier multithreading settings...
-echo ==============================================================
-powershell -Command "& {zerotier-cli info -j | ConvertFrom-Json | Select-Object @{Name='multicoreEnabled';Expression={$_.config.settings.multicoreEnabled}}, @{Name='concurrency';Expression={$_.config.settings.concurrency}}, @{Name='cpuPinningEnabled';Expression={$_.config.settings.cpuPinningEnabled}} | Format-List}"
-echo If "config" shows "multicoreEnabled: true", multithreading is active!
-echo Concurrency is the value taken with your max cores 
-echo if needed you can adjust concurrency in C:\ProgramData\ZeroTier\One\local.conf
+echo To activate the settings on a future Windows multi-core release, run:
+echo     net stop ZeroTierOneService ^&^& net start ZeroTierOneService
+echo.
+echo (Skipped automatically here - restarting the service today would only
+echo  cause a brief disconnect with no effective change on Windows.)
 echo.
 echo.
 echo.

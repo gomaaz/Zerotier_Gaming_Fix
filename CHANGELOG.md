@@ -10,6 +10,24 @@ _Planned and in-progress changes will be listed here._
 
 ---
 
+## [v2.2.0] – 2026-05-14
+
+Discovery boost, honesty about Windows multi-core support, hardened installer, and per-reconnect logging.
+
+### Added
+- **Multicast route `224.0.0.0/4` is now added on every ZeroTier adapter** alongside the existing broadcast route. Covers IGMP, SSDP, mDNS (`224.0.0.251`), and the multicast-based server-browser protocols used by Source-Engine titles, Minecraft LAN, Quake-derived games, and many lightweight indie titles.
+- **Firewall rule groups `Network Discovery` and `File and Printer Sharing` are now explicitly enabled** for the Private profile on every reconnect. Switching the network category to Private alone left those rule groups dormant in many installs. Tries the locale-independent Firewall API Group IDs first, then English and German display names as fallback.
+- **Per-reconnect run log at `C:\zerotier_fix\run.log`.** Every fire of the scheduled task appends a `run start` / `run end` line with a timestamp, so failures in the SYSTEM-context task are traceable after the fact (previously the task ran completely silent).
+- **`local.conf` is backed up before being overwritten.** Installer now copies any existing `%ProgramData%\ZeroTier\One\local.conf` to `local.conf.bak.<yyyyMMdd-HHmmss>` before writing its own version, so user-defined settings (port, bind, custom roots, …) are recoverable.
+
+### Changed
+- **Multi-core config is now staged honestly.** As of ZeroTier 1.16.1, multi-core packet I/O is implemented only for Linux and FreeBSD — the Windows port is still pending upstream. The installer no longer claims that the setting activates anything on Windows; the section is renamed to "Pre-staging" and explains that the config is forward-compatible (effective once ZeroTier ships Windows multi-core support).
+- **Installer no longer restarts the ZeroTier service** after writing `local.conf`. The restart caused a brief disconnect for no observable benefit on Windows, where the multi-core settings are inert anyway. A note is printed instead, showing the manual one-liner for users on a future ZT release that supports Windows MT.
+- The first line printed by `ZeroTier_Fix.bat` no longer claims "IPv6 prioritization" — it never did that.
+
+### Fixed
+- **DirectPlay state detection.** The installer previously checked only against `State = Disabled`; the legitimate state `DisabledWithPayloadRemoved` (produced by a prior `dism /remove-feature`) was silently treated as enabled, so the feature was never re-installed. The check is now `-ne 'Enabled'`.
+
 ## [v2.1.1] – 2026-05-14
 
 First SemVer release after the switch from the `vMAJOR.MINOR` scheme. Bugfix-only — no new functionality, no install/uninstall flow changes.
@@ -102,7 +120,8 @@ First SemVer release after the switch from the `vMAJOR.MINOR` scheme. Bugfix-onl
   - Prioritizes IPv4 over IPv6 via prefix policy `::ffff:0:0/96`.
   - Removes the `0.0.0.0/0` default route on ZT adapters so ZT doesn't capture internet traffic.
 
-[Unreleased]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.2.0...HEAD
+[v2.2.0]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.1.1...v2.2.0
 [v2.1.1]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.1...v2.1.1
 [v2.1]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v2.0...v2.1
 [v2.0]: https://github.com/gomaaz/Zerotier_Gaming_Fix/compare/v1.9...v2.0

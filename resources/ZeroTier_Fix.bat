@@ -9,6 +9,12 @@ if %errorLevel% neq 0 (
     exit /b
 )
 
+:: Run log - appended on every fire of the scheduled task so failures are
+:: traceable after the fact. SYSTEM-context runs have no console.
+set LOGFILE=%~dp0run.log
+echo. >> "%LOGFILE%"
+echo [%date% %time%] ZeroTier_Fix.bat run start >> "%LOGFILE%"
+
 :: Define backup file path
 set BACKUP_FILE=%~dp0prefix_policy_backup.txt
 
@@ -33,12 +39,26 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "& {Get-NetConnectionProfile | Where-Object { $_.InterfaceAlias -like 'ZeroTier*' } | ForEach-Object { Set-NetConnectionProfile -Name $_.Name -NetworkCategory Private } }"
 
-:: Detect all ZeroTier Interface Indexes and add broadcast route
+:: Detect all ZeroTier Interface Indexes and add LAN-discovery routes:
+:: broadcast (255.255.255.255/32) for classic LAN discovery, and the full
+:: IPv4 multicast range (224.0.0.0/4) for game-server browsers, mDNS,
+:: SSDP, and similar protocols that older / lightweight game discovery
+:: relies on.
 for /f "tokens=1 delims=," %%A in ('powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "& {Get-NetIPInterface | Where-Object { $_.InterfaceAlias -like 'ZeroTier*' } | Select-Object -ExpandProperty InterfaceIndex}"') do (
-    echo [INFO] Adding broadcast route for 255.255.255.255 via ZeroTier interface %%A...
+    "& {Get-NetIPInterface | Where-Object { $_.InterfaceAlias -like 'ZeroTier*' } | Select-Object -ExpandProperty InterfaceIndex -Unique}"') do (
+    echo [INFO] Adding broadcast route 255.255.255.255 on ZT Interface Index %%A...
     route -p add 255.255.255.255 mask 255.255.255.255 0.0.0.0 if %%A
+    echo [INFO] Adding multicast route 224.0.0.0/4 on ZT Interface Index %%A...
+    route -p add 224.0.0.0 mask 240.0.0.0 0.0.0.0 if %%A
 )
+
+:: Ensure LAN-discovery firewall rule groups are enabled for the Private
+:: profile. Switching the network category to Private (above) is not
+:: enough on its own - the rule groups themselves may have been turned
+:: off. Tries the locale-independent Group ID first, then English and
+:: German display names as fallback. Idempotent.
+echo [INFO] Enabling LAN-discovery firewall rule groups (Network Discovery + File and Printer Sharing)...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ids=@('@FirewallAPI.dll,-32752','@FirewallAPI.dll,-28502','Network Discovery','File and Printer Sharing','Netzwerkerkennung','Datei- und Druckerfreigabe'); foreach($id in $ids){$r=Get-NetFirewallRule -Group $id -ErrorAction SilentlyContinue; if(-not $r){$r=Get-NetFirewallRule -DisplayGroup $id -ErrorAction SilentlyContinue}; if($r){$r | Where-Object {$_.Profile -match 'Private|Any|All'} | Enable-NetFirewallRule -ErrorAction SilentlyContinue}}"
 
 
 :: Force delete the 0.0.0.0/0 default route on EVERY ZT adapter so ZeroTier
@@ -59,5 +79,6 @@ for /f "tokens=1" %%A in ('powershell -NoProfile -ExecutionPolicy Bypass -Comman
 schtasks /delete /tn "ZeroTier_PrioritizeIPv6" /f >nul 2>&1
 if exist "C:\zerotier_fix\set_ipv6_policy.ps1" del /F /Q "C:\zerotier_fix\set_ipv6_policy.ps1" >nul 2>&1
 
+echo [%date% %time%] ZeroTier_Fix.bat run end >> "%LOGFILE%"
 echo [DONE] ZeroTier network settings updated.
 exit
