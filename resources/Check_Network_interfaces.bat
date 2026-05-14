@@ -176,7 +176,7 @@ echo ==============================================================
 sc query WinIPBroadcast >nul 2>&1
 if errorlevel 1 (
     echo [INFO] WinIPBroadcast not installed.
-    echo        Install it via install_zerotier_gaming_fix.bat (Optional section).
+    echo        Install it via install_zerotier_gaming_fix.bat ^(Optional section^).
 ) else (
     sc query WinIPBroadcast | findstr /R /C:"STATE" /C:"SERVICE_NAME"
 )

@@ -6,7 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+_Planned and in-progress changes will be listed here._
+
+---
+
+## [v2.5.1] – 2026-05-14
+
+Follow-up patch to v2.5.0. Fixes two real problems with the new diagnostic flow: a cmd parser error that aborted block `[8]` and (silently) prevented the summary table from running, plus the actual reason the window auto-closed on Explorer double-click. No installer or per-reconnect behavior change.
+
 ### Fixed
+- **`Check_Network_interfaces.bat` block `[8]` aborted with a `"." kann syntaktisch an dieser Stelle nicht verarbeitet werden.` parser error, which also prevented the new summary table from running.** Unescaped parentheses in an `echo` line inside the `if errorlevel 1 ( … )` block (`echo … install_zerotier_gaming_fix.bat (Optional section).`) closed the `if`-block early for the cmd parser; the trailing `.` then ran as a bogus command. The parentheses are now escaped (`^(Optional section^)`).
 - **`Check_Network_interfaces.bat` window still auto-closed on Explorer double-click / "Run as Administrator" despite the v2.5.0 hardened-`pause` fix.** Root cause was not the stdin buffer (as v2.5.0 assumed) but the cmd host: when Windows launches the BAT via Explorer it spawns the cmd with `/c`, which terminates the console immediately after the last batch statement — `pause` never even gets to block. The script now detects this at the top (its own filename appearing in `%cmdcmdline%`) and self-relaunches in a persistent shell (`cmd /k`). A marker variable `ZGF_PERSISTENT` prevents endless re-exec. Side effect: when started this way, the window now has to be closed manually with `exit` or the close button — which is exactly what the operator wanted so they can read the diagnostic output at their own pace. Invocations from an already-open cmd shell continue to behave as before (one `pause`, then back to the shell).
 
 ---

@@ -2,7 +2,7 @@
 cls
 
 :: Version of this installer. Keep in sync with CHANGELOG.md and the git tag.
-set ZGF_VERSION=2.5.0
+set ZGF_VERSION=2.5.1
 
 echo.
 echo.
